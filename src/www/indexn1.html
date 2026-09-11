@@ -1,0 +1,1734 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AmneziaWG</title>
+  <meta charset="utf-8"/>
+  <link href="./css/app.css" rel="stylesheet">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./img/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="./img/apple-touch-icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Google+Sans+Display:wght@300;400;500&family=Google+Sans+Mono&display=swap" rel="stylesheet">
+  <style>
+    [v-cloak] { display: none; }
+    .line-chart .apexcharts-svg { transform: translateY(3px); }
+
+    /* ════════════════════════════════════════════
+       M3 EXPRESSIVE — ACCENT SYSTEM
+       accent-h is the only knob: everything derives
+       from it via HSL. JS sets --acc-h on <html>.
+    ════════════════════════════════════════════ */
+    :root {
+      --acc-h: 220;
+      --acc-s: 85%;
+
+      /* Derived accent shades */
+      --acc-10:  hsl(var(--acc-h),var(--acc-s),10%);
+      --acc-20:  hsl(var(--acc-h),var(--acc-s),18%);
+      --acc-30:  hsl(var(--acc-h),var(--acc-s),28%);
+      --acc-40:  hsl(var(--acc-h),var(--acc-s),40%);
+      --acc-50:  hsl(var(--acc-h),var(--acc-s),50%);
+      --acc-60:  hsl(var(--acc-h),var(--acc-s),60%);
+      --acc-70:  hsl(var(--acc-h),var(--acc-s),70%);
+      --acc-80:  hsl(var(--acc-h),var(--acc-s),80%);
+      --acc-90:  hsl(var(--acc-h),var(--acc-s),90%);
+      --acc-95:  hsl(var(--acc-h),calc(var(--acc-s)*0.6),95%);
+
+      /* Container accent */
+      --acc-container-light: hsl(var(--acc-h),calc(var(--acc-s)*0.55),90%);
+      --acc-on-container-light: hsl(var(--acc-h),var(--acc-s),15%);
+      --acc-container-dark:  hsl(var(--acc-h),var(--acc-s),22%);
+      --acc-on-container-dark: hsl(var(--acc-h),calc(var(--acc-s)*0.7),88%);
+
+      /* Shape */
+      --r-xs:   4px;
+      --r-sm:   8px;
+      --r-md:   12px;
+      --r-lg:   16px;
+      --r-xl:   20px;
+      --r-2xl:  28px;
+      --r-3xl:  36px;
+      --r-full: 9999px;
+
+      /* Font */
+      --font-primary: 'Google Sans', 'Roboto', system-ui, sans-serif;
+      --font-display: 'Google Sans Display', 'Google Sans', sans-serif;
+      --font-mono: 'Google Sans Mono', 'Roboto Mono', monospace;
+
+      /* Motion */
+      --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-std: cubic-bezier(0.2, 0, 0, 1);
+      --dur-short: 200ms;
+      --dur-med: 350ms;
+      --dur-long: 500ms;
+    }
+
+    /* ══ DARK THEME (default) ══ */
+    :root, [data-theme="dark"] {
+      color-scheme: dark;
+      --bg:          hsl(var(--acc-h), 12%, 8%);
+      --bg2:         hsl(var(--acc-h), 12%, 11%);
+      --surf:        hsl(var(--acc-h), 12%, 13%);
+      --surf-low:    hsl(var(--acc-h), 12%, 16%);
+      --surf-mid:    hsl(var(--acc-h), 11%, 19%);
+      --surf-high:   hsl(var(--acc-h), 11%, 22%);
+      --surf-top:    hsl(var(--acc-h), 10%, 26%);
+
+      --on-surf:     hsl(var(--acc-h), 10%, 92%);
+      --on-surf-var: hsl(var(--acc-h), 8%, 65%);
+      --outline:     hsl(var(--acc-h), 8%, 42%);
+      --outline-var: hsl(var(--acc-h), 9%, 24%);
+
+      --primary:         var(--acc-70);
+      --on-primary:      hsl(var(--acc-h), var(--acc-s), 12%);
+      --primary-cont:    var(--acc-container-dark);
+      --on-primary-cont: var(--acc-on-container-dark);
+
+      --secondary:       hsl(calc(var(--acc-h) + 30), 25%, 68%);
+      --secondary-cont:  hsl(calc(var(--acc-h) + 30), 20%, 22%);
+      --on-secondary-cont: hsl(calc(var(--acc-h) + 30), 20%, 88%);
+
+      --err:       #FFB4AB;
+      --on-err:    #690005;
+      --err-cont:  #93000A;
+      --on-err-cont: #FFDAD6;
+
+      --elev-1: 0 2px 4px rgba(0,0,0,.35), 0 1px 2px rgba(0,0,0,.2);
+      --elev-2: 0 4px 12px rgba(0,0,0,.4), 0 2px 4px rgba(0,0,0,.2);
+      --elev-3: 0 8px 24px rgba(0,0,0,.45), 0 4px 8px rgba(0,0,0,.2);
+    }
+
+    /* ══ LIGHT THEME ══ */
+    [data-theme="light"] {
+      color-scheme: light;
+      --bg:          hsl(var(--acc-h), 30%, 97%);
+      --bg2:         hsl(var(--acc-h), 25%, 95%);
+      --surf:        hsl(var(--acc-h), 25%, 96%);
+      --surf-low:    hsl(var(--acc-h), 20%, 93%);
+      --surf-mid:    hsl(var(--acc-h), 18%, 90%);
+      --surf-high:   hsl(var(--acc-h), 15%, 86%);
+      --surf-top:    hsl(var(--acc-h), 12%, 82%);
+
+      --on-surf:     hsl(var(--acc-h), 15%, 10%);
+      --on-surf-var: hsl(var(--acc-h), 10%, 38%);
+      --outline:     hsl(var(--acc-h), 10%, 55%);
+      --outline-var: hsl(var(--acc-h), 15%, 80%);
+
+      --primary:         var(--acc-40);
+      --on-primary:      #fff;
+      --primary-cont:    var(--acc-container-light);
+      --on-primary-cont: var(--acc-on-container-light);
+
+      --secondary:       hsl(calc(var(--acc-h) + 30), 30%, 40%);
+      --secondary-cont:  hsl(calc(var(--acc-h) + 30), 30%, 88%);
+      --on-secondary-cont: hsl(calc(var(--acc-h) + 30), 30%, 12%);
+
+      --err:       #BA1A1A;
+      --on-err:    #fff;
+      --err-cont:  #FFDAD6;
+      --on-err-cont: #410002;
+
+      --elev-1: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.08);
+      --elev-2: 0 2px 8px rgba(0,0,0,.14), 0 1px 3px rgba(0,0,0,.08);
+      --elev-3: 0 6px 20px rgba(0,0,0,.14), 0 2px 6px rgba(0,0,0,.1);
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root:not([data-theme]) {
+        color-scheme: light;
+        --bg:          hsl(var(--acc-h), 30%, 97%);
+        --bg2:         hsl(var(--acc-h), 25%, 95%);
+        --surf:        hsl(var(--acc-h), 25%, 96%);
+        --surf-low:    hsl(var(--acc-h), 20%, 93%);
+        --surf-mid:    hsl(var(--acc-h), 18%, 90%);
+        --surf-high:   hsl(var(--acc-h), 15%, 86%);
+        --surf-top:    hsl(var(--acc-h), 12%, 82%);
+        --on-surf:     hsl(var(--acc-h), 15%, 10%);
+        --on-surf-var: hsl(var(--acc-h), 10%, 38%);
+        --outline:     hsl(var(--acc-h), 10%, 55%);
+        --outline-var: hsl(var(--acc-h), 15%, 80%);
+        --primary:         var(--acc-40);
+        --on-primary:      #fff;
+        --primary-cont:    var(--acc-container-light);
+        --on-primary-cont: var(--acc-on-container-light);
+        --secondary:       hsl(calc(var(--acc-h) + 30), 30%, 40%);
+        --secondary-cont:  hsl(calc(var(--acc-h) + 30), 30%, 88%);
+        --on-secondary-cont: hsl(calc(var(--acc-h) + 30), 30%, 12%);
+        --err:       #BA1A1A;
+        --on-err:    #fff;
+        --err-cont:  #FFDAD6;
+        --on-err-cont: #410002;
+        --elev-1: 0 1px 3px rgba(0,0,0,.12), 0 1px 2px rgba(0,0,0,.08);
+        --elev-2: 0 2px 8px rgba(0,0,0,.14), 0 1px 3px rgba(0,0,0,.08);
+        --elev-3: 0 6px 20px rgba(0,0,0,.14), 0 2px 6px rgba(0,0,0,.1);
+      }
+    }
+
+    /* ════ BASE ════ */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: var(--font-primary);
+      background: var(--bg);
+      color: var(--on-surf);
+      min-height: 100vh;
+      transition: background var(--dur-med) var(--ease-std),
+                  color var(--dur-short) var(--ease-std);
+    }
+
+    #app {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 16px 64px;
+    }
+
+    /* ════ THEME TRANSITIONS ════ */
+    body, .m3-card, .m3-topbar, .client-row, .m3-dialog,
+    .m3-switch, .m3-field input, .action-btn, .m3-btn-filled,
+    .m3-btn-tonal, .m3-btn-text {
+      transition: background var(--dur-med) var(--ease-std),
+                  background-color var(--dur-med) var(--ease-std),
+                  border-color var(--dur-short) var(--ease-std),
+                  color var(--dur-short) var(--ease-std),
+                  box-shadow var(--dur-short) var(--ease-std);
+    }
+
+    /* ════ TOP APP BAR — M3 Expressive ════ */
+    .m3-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: var(--bg);
+      padding: 16px 0 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    /* subtle blur/frost effect for topbar */
+    .m3-topbar::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: inherit;
+      backdrop-filter: blur(12px) saturate(1.5);
+      z-index: -1;
+      border-bottom: 1px solid var(--outline-var);
+      opacity: 0.85;
+    }
+
+    .topbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+
+    /* Expressive logo blob */
+    .topbar-logo {
+      width: 46px;
+      height: 46px;
+      background: var(--primary-cont);
+      color: var(--on-primary-cont);
+      border-radius: 14px 14px 6px 14px; /* asymmetric — M3 Expressive */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-radius var(--dur-long) var(--spring),
+                  background var(--dur-med) var(--ease-std);
+    }
+    .topbar-logo:hover { border-radius: 14px; }
+    .topbar-logo img { width: 28px; height: 28px; display: block; }
+
+    .topbar-title {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: -0.3px;
+      color: var(--on-surf);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ════ ACCENT PICKER ════ */
+    .accent-picker-wrap {
+      position: relative;
+    }
+
+    .accent-dot-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--r-full);
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--dur-short);
+    }
+    .accent-dot-btn:hover { background: color-mix(in srgb, var(--primary) 12%, transparent); }
+
+    .accent-dot-inner {
+      width: 22px;
+      height: 22px;
+      border-radius: var(--r-full);
+      background: var(--primary);
+      border: 2.5px solid var(--on-surf);
+      transition: transform var(--dur-med) var(--spring), background var(--dur-short);
+    }
+    .accent-dot-btn:hover .accent-dot-inner { transform: scale(1.15); }
+
+    .accent-panel {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--surf-low);
+      border: 1px solid var(--outline-var);
+      border-radius: var(--r-2xl);
+      padding: 16px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      width: 220px;
+      box-shadow: var(--elev-2);
+      z-index: 200;
+      animation: panelIn var(--dur-med) var(--spring);
+    }
+
+    @keyframes panelIn {
+      from { opacity: 0; transform: scale(0.88) translateY(-8px); transform-origin: top right; }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .accent-panel-swatch {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--r-full);
+      border: 2.5px solid transparent;
+      cursor: pointer;
+      transition: transform var(--dur-med) var(--spring), border-color var(--dur-short);
+      outline: none;
+    }
+    .accent-panel-swatch:hover { transform: scale(1.25); }
+    .accent-panel-swatch.active { border-color: var(--on-surf); transform: scale(1.15); }
+
+    /* ════ ICON BUTTON ════ */
+    .m3-icon-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--r-full);
+      border: none;
+      background: transparent;
+      color: var(--on-surf-var);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background var(--dur-short), color var(--dur-short), transform var(--dur-med) var(--spring);
+      position: relative;
+      overflow: hidden;
+      padding: 0;
+    }
+    .m3-icon-btn:hover { background: color-mix(in srgb, var(--on-surf) 10%, transparent); }
+    .m3-icon-btn:active { transform: scale(0.88); }
+    .m3-icon-btn svg { width: 22px; height: 22px; }
+
+    .m3-icon-btn.tonal {
+      background: var(--primary-cont);
+      color: var(--on-primary-cont);
+    }
+    .m3-icon-btn.tonal:hover {
+      background: color-mix(in srgb, var(--primary-cont) 85%, var(--primary));
+    }
+
+    /* ════ LOGOUT BUTTON ════ */
+    .logout-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: var(--r-full);
+      border: none;
+      background: transparent;
+      color: var(--primary);
+      font-family: var(--font-primary);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--dur-short);
+      white-space: nowrap;
+    }
+    .logout-btn:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+    .logout-btn svg { width: 16px; height: 16px; }
+
+    /* ════ UPDATE BANNER — M3 Expressive ════ */
+    .update-banner {
+      background: var(--err-cont);
+      color: var(--on-err-cont);
+      border-radius: var(--r-xl) var(--r-xl) var(--r-sm) var(--r-xl); /* expressive asymmetry */
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 16px;
+      box-shadow: var(--elev-1);
+      animation: slideDown var(--dur-med) var(--spring);
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-12px) scale(0.98); }
+      to   { opacity: 1; transform: none; }
+    }
+    .update-banner-text strong { display: block; font-weight: 500; margin-bottom: 2px; }
+    .update-banner-text p { font-size: 13px; opacity: 0.85; margin: 0; }
+
+    .update-link {
+      background: var(--on-err-cont);
+      color: var(--err-cont);
+      border: none;
+      border-radius: var(--r-full);
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-primary);
+      cursor: pointer;
+      white-space: nowrap;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: opacity var(--dur-short), transform var(--dur-med) var(--spring);
+    }
+    .update-link:hover { opacity: 0.9; transform: scale(1.04); }
+
+    /* ════ MAIN CARD — M3 Expressive ════ */
+    .m3-card {
+      background: var(--surf-low);
+      border-radius: var(--r-2xl) var(--r-2xl) var(--r-2xl) var(--r-2xl);
+      box-shadow: var(--elev-1);
+      overflow: hidden;
+      animation: cardReveal var(--dur-long) var(--spring);
+    }
+    @keyframes cardReveal {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 24px 20px 28px;
+      border-bottom: 1px solid var(--outline-var);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .card-header-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--on-surf);
+      letter-spacing: -0.2px;
+    }
+
+    .card-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    /* ════ BUTTONS ════ */
+
+    /* Filled Button — M3 Expressive: pill shape, spring press */
+    .m3-btn-filled {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      border-radius: var(--r-full);
+      background: var(--primary);
+      color: var(--on-primary);
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-primary);
+      cursor: pointer;
+      white-space: nowrap;
+      text-decoration: none;
+      transition: box-shadow var(--dur-short), transform var(--dur-med) var(--spring),
+                  background var(--dur-short);
+      position: relative;
+      overflow: hidden;
+    }
+    .m3-btn-filled:hover {
+      box-shadow: var(--elev-2);
+      transform: scale(1.03);
+    }
+    .m3-btn-filled:active { transform: scale(0.95); }
+    .m3-btn-filled svg { width: 18px; height: 18px; }
+
+    .m3-btn-filled:disabled, .m3-btn-filled.disabled {
+      background: color-mix(in srgb, var(--on-surf) 12%, transparent);
+      color: color-mix(in srgb, var(--on-surf) 38%, transparent);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Tonal Button */
+    .m3-btn-tonal {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--r-full);
+      background: var(--secondary-cont);
+      color: var(--on-secondary-cont);
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-primary);
+      cursor: pointer;
+      white-space: nowrap;
+      text-decoration: none;
+      transition: box-shadow var(--dur-short), transform var(--dur-med) var(--spring),
+                  background var(--dur-short);
+    }
+    .m3-btn-tonal:hover {
+      box-shadow: var(--elev-1);
+      transform: scale(1.03);
+    }
+    .m3-btn-tonal:active { transform: scale(0.95); }
+    .m3-btn-tonal svg { width: 18px; height: 18px; }
+
+    /* Text Button */
+    .m3-btn-text {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 12px;
+      border-radius: var(--r-full);
+      background: transparent;
+      color: var(--primary);
+      border: none;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-primary);
+      cursor: pointer;
+      transition: background var(--dur-short);
+    }
+    .m3-btn-text:hover { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+
+    /* ════ CLIENT ROW — M3 Expressive ════ */
+    .client-row {
+      position: relative;
+      overflow: hidden;
+      border-bottom: 1px solid var(--outline-var);
+      transition: background var(--dur-short);
+    }
+    .client-row:last-child { border-bottom: none; }
+    .client-row:hover { background: color-mix(in srgb, var(--primary) 4%, transparent); }
+
+    /* background traffic mini-charts */
+    .client-row-chart-rx,
+    .client-row-chart-tx {
+      position: absolute;
+      left: 0; right: 0;
+      height: 28px;
+      z-index: 0;
+      opacity: 0.18;
+      pointer-events: none;
+    }
+    .client-row-chart-rx { top: 0; }
+    .client-row-chart-tx { bottom: 0; }
+
+    .client-row-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px 14px 22px;
+    }
+
+    /* ════ AVATAR — Expressive pill-blob ════ */
+    .client-avatar {
+      flex-shrink: 0;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--surf-high);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      transition: border-radius var(--dur-long) var(--spring);
+    }
+    .client-row:hover .client-avatar { border-radius: 14px 14px 6px 14px; }
+    .client-avatar svg { width: 24px; height: 24px; color: var(--on-surf-var); }
+    .client-avatar img {
+      width: 46px; height: 46px;
+      border-radius: inherit;
+      position: absolute; inset: 0;
+      object-fit: cover;
+    }
+
+    /* online presence dot */
+    .online-dot {
+      position: absolute;
+      bottom: 1px; right: 1px;
+      width: 13px; height: 13px;
+      border-radius: 50%;
+      background: #3dcc6e;
+      border: 2.5px solid var(--surf-low);
+      z-index: 2;
+    }
+    .online-dot-ping {
+      position: absolute;
+      bottom: -1px; right: -1px;
+      width: 17px; height: 17px;
+      border-radius: 50%;
+      background: rgba(61, 204, 110, 0.35);
+      animation: ping 1.8s ease-in-out infinite;
+      z-index: 1;
+    }
+    @keyframes ping {
+      0%   { transform: scale(1); opacity: 1; }
+      75%, 100% { transform: scale(2.2); opacity: 0; }
+    }
+
+    /* ════ CLIENT INFO ════ */
+    .client-info { flex: 1; min-width: 0; }
+
+    .client-name-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 3px;
+    }
+
+    .client-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--on-surf);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .client-name input {
+      background: var(--surf-mid);
+      border: 2px solid var(--primary);
+      border-radius: var(--r-sm);
+      color: var(--on-surf);
+      font-family: var(--font-primary);
+      font-size: 15px;
+      font-weight: 500;
+      padding: 2px 8px;
+      outline: none;
+      width: 200px;
+      transition: border-color var(--dur-short);
+    }
+
+    .edit-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      opacity: 0;
+      color: var(--on-surf-var);
+      padding: 3px;
+      border-radius: var(--r-xs);
+      display: flex;
+      align-items: center;
+      transition: opacity var(--dur-short), transform var(--dur-med) var(--spring);
+    }
+    .client-name-row:hover .edit-btn,
+    .client-meta-row:hover .edit-btn { opacity: 1; }
+    .edit-btn:hover { transform: scale(1.2); }
+    .edit-btn svg { width: 14px; height: 14px; }
+
+    .client-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .client-meta-chip {
+      font-size: 12px;
+      color: var(--on-surf-var);
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-family: var(--font-mono);
+    }
+    .client-meta-chip svg { width: 11px; height: 11px; opacity: 0.7; }
+
+    .client-meta-sep { color: var(--outline); font-size: 11px; }
+
+    /* ════ TRAFFIC STATS ════ */
+    .client-traffic {
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .traffic-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      min-width: 76px;
+    }
+
+    .traffic-label {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10px;
+      color: var(--outline);
+      margin-bottom: 2px;
+    }
+    .traffic-label svg { width: 10px; height: 10px; }
+
+    .traffic-speed {
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--font-mono);
+      color: var(--on-surf);
+    }
+
+    .traffic-total {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--on-surf-var);
+    }
+
+    /* ════ ACTION BUTTONS — M3 Expressive ════ */
+    .client-actions {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .action-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--r-md);
+      background: var(--surf-high);
+      color: var(--on-surf-var);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+      transition: background var(--dur-short), color var(--dur-short),
+                  transform var(--dur-med) var(--spring), border-radius var(--dur-long) var(--spring);
+    }
+    .action-btn:hover {
+      background: var(--primary-cont);
+      color: var(--on-primary-cont);
+      border-radius: var(--r-full);
+      transform: scale(1.1);
+    }
+    .action-btn:active { transform: scale(0.9); }
+    .action-btn:disabled, .action-btn.disabled {
+      opacity: 0.35;
+      cursor: default;
+      pointer-events: none;
+    }
+    .action-btn.danger:hover {
+      background: var(--err-cont);
+      color: var(--on-err-cont);
+    }
+    .action-btn svg { width: 20px; height: 20px; }
+
+    /* ════ SWITCH — M3 Expressive ════ */
+    .m3-switch {
+      width: 52px;
+      height: 32px;
+      border-radius: 16px;
+      background: var(--surf-mid);
+      border: 2px solid var(--outline);
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      transition: background var(--dur-med) var(--ease-std),
+                  border-color var(--dur-med) var(--ease-std);
+    }
+    .m3-switch.on {
+      background: var(--primary);
+      border-color: var(--primary);
+    }
+
+    .m3-switch-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--outline);
+      position: absolute;
+      top: 50%;
+      left: 4px;
+      transform: translateY(-50%);
+      transition: left var(--dur-med) var(--spring),
+                  width var(--dur-med) var(--spring),
+                  height var(--dur-med) var(--spring),
+                  background var(--dur-med);
+    }
+    .m3-switch.on .m3-switch-thumb {
+      left: 22px;
+      width: 24px;
+      height: 24px;
+      transform: translateY(-50%);
+      background: var(--on-primary);
+    }
+
+    /* ════ EMPTY STATE ════ */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 72px 32px;
+      color: var(--on-surf-var);
+      text-align: center;
+      gap: 16px;
+    }
+
+    /* Expressive blob shape for empty icon */
+    .empty-state-icon {
+      width: 96px;
+      height: 96px;
+      background: var(--surf-mid);
+      border-radius: 32px 32px 12px 32px; /* expressive */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: blobPulse 3s ease-in-out infinite;
+      transition: background var(--dur-med);
+    }
+    @keyframes blobPulse {
+      0%, 100% { border-radius: 32px 32px 12px 32px; }
+      50%       { border-radius: 32px 12px 32px 32px; }
+    }
+    .empty-state-icon svg { width: 48px; height: 48px; color: var(--on-surf-var); }
+    .empty-state p { font-size: 14px; margin: 0; }
+    .empty-state strong { font-size: 17px; font-weight: 500; color: var(--on-surf); }
+
+    /* ════ SPINNER ════ */
+    .spinner-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 56px;
+    }
+
+    .m3-spinner {
+      width: 48px; height: 48px;
+      border: 4px solid var(--outline-var);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ════ DIALOG / MODAL — M3 Expressive ════ */
+    .m3-dialog-scrim {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.55);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      backdrop-filter: blur(3px);
+      animation: scrimIn var(--dur-med) ease;
+    }
+    @keyframes scrimIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .m3-dialog {
+      background: var(--surf-mid);
+      /* Expressive: slight asymmetric radii */
+      border-radius: var(--r-3xl) var(--r-3xl) var(--r-xl) var(--r-3xl);
+      box-shadow: var(--elev-3);
+      width: 100%;
+      max-width: 480px;
+      overflow: hidden;
+      animation: dialogPop var(--dur-med) var(--spring);
+    }
+    @keyframes dialogPop {
+      from { opacity: 0; transform: scale(0.88) translateY(12px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .m3-dialog-content { padding: 28px 28px 8px; }
+
+    .m3-dialog-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: var(--r-full);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 18px;
+      animation: iconBounce var(--dur-long) var(--spring) 100ms both;
+    }
+    @keyframes iconBounce {
+      from { transform: scale(0.5) rotate(-15deg); opacity: 0; }
+      to   { transform: none; opacity: 1; }
+    }
+    .m3-dialog-icon.primary { background: var(--primary-cont); color: var(--on-primary-cont); }
+    .m3-dialog-icon.error   { background: var(--err-cont); color: var(--on-err-cont); }
+    .m3-dialog-icon svg { width: 26px; height: 26px; }
+
+    .m3-dialog-title {
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 400;
+      text-align: center;
+      color: var(--on-surf);
+      margin-bottom: 12px;
+    }
+
+    .m3-dialog-body {
+      font-size: 14px;
+      color: var(--on-surf-var);
+      text-align: center;
+      line-height: 1.65;
+      padding-bottom: 8px;
+    }
+
+    .m3-dialog-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      padding: 16px 24px 24px;
+    }
+
+    /* ════ TEXT FIELDS — M3 Filled ════ */
+    .m3-field {
+      position: relative;
+      margin-bottom: 16px;
+    }
+    .m3-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--primary);
+      margin-bottom: 4px;
+      letter-spacing: 0.4px;
+    }
+    .m3-field input {
+      width: 100%;
+      background: var(--surf-top);
+      border: none;
+      border-bottom: 2px solid var(--outline);
+      border-radius: var(--r-xs) var(--r-xs) 0 0;
+      color: var(--on-surf);
+      font-size: 16px;
+      font-family: var(--font-primary);
+      padding: 14px 14px 8px;
+      outline: none;
+      transition: border-color var(--dur-short), background var(--dur-short);
+    }
+    .m3-field input:focus {
+      border-bottom-color: var(--primary);
+      background: color-mix(in srgb, var(--surf-top) 80%, var(--primary));
+    }
+    .m3-field input::placeholder { color: var(--on-surf-var); }
+
+    /* ════ QR DIALOG ════ */
+    .qr-dialog {
+      background: #fff;
+      border-radius: var(--r-3xl) var(--r-3xl) var(--r-xl) var(--r-3xl);
+      padding: 36px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      max-width: 320px;
+      width: 100%;
+      animation: dialogPop var(--dur-med) var(--spring);
+    }
+    .qr-close {
+      position: absolute;
+      top: 14px; right: 14px;
+      width: 36px; height: 36px;
+      border-radius: var(--r-full);
+      background: rgba(0,0,0,.08);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      transition: background var(--dur-short), transform var(--dur-med) var(--spring);
+    }
+    .qr-close:hover { background: rgba(0,0,0,.14); transform: scale(1.1) rotate(5deg); }
+    .qr-close svg { width: 20px; height: 20px; }
+    .qr-dialog img { width: 220px; height: 220px; border-radius: var(--r-lg); }
+
+    /* ════ LOGIN SCREEN ════ */
+    .login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 32px;
+    }
+
+    .login-card {
+      background: var(--surf-low);
+      /* Expressive asymmetric radii */
+      border-radius: var(--r-3xl) var(--r-3xl) var(--r-xl) var(--r-3xl);
+      padding: 44px 36px 36px;
+      width: 100%;
+      max-width: 360px;
+      box-shadow: var(--elev-2);
+      animation: cardReveal var(--dur-long) var(--spring);
+    }
+
+    .login-logo {
+      width: 80px;
+      height: 80px;
+      background: var(--primary-cont);
+      /* Expressive blob */
+      border-radius: 28px 28px 10px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 28px;
+      animation: blobPulse 4s ease-in-out infinite;
+      transition: background var(--dur-med);
+    }
+    .login-logo img { width: 48px; height: 48px; }
+
+    .login-title {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 300;
+      text-align: center;
+      color: var(--on-surf);
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .login-subtitle {
+      font-size: 14px;
+      color: var(--on-surf-var);
+      text-align: center;
+      margin-bottom: 36px;
+      line-height: 1.5;
+    }
+
+    .login-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 28px;
+    }
+    .login-actions .m3-btn-filled {
+      width: 100%;
+      justify-content: center;
+      padding: 16px;
+      font-size: 15px;
+      border-radius: var(--r-2xl);
+    }
+
+    /* ════ SWITCH ROW ════ */
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+    }
+    .switch-row label {
+      font-size: 14px;
+      color: var(--on-surf-var);
+      cursor: pointer;
+    }
+
+    /* ════ ONE-TIME LINK ════ */
+    .otl-row {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--primary);
+      padding: 3px 0 5px;
+      word-break: break-all;
+    }
+
+    /* ════ RIPPLE ════ */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      transform: scale(0);
+      animation: rippleAnim 0.5s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* ════ CLIENT ROW ENTER ANIMATION ════ */
+    .client-row {
+      animation: rowIn var(--dur-med) var(--spring) both;
+    }
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ════ RESPONSIVE ════ */
+    @media (max-width: 600px) {
+      .topbar-title { font-size: 19px; }
+      .logout-btn span { display: none; }
+      .card-header-actions .m3-btn-tonal span { display: none; }
+      .card-header-actions .m3-btn-tonal {
+        padding: 10px;
+        min-width: 40px;
+        justify-content: center;
+      }
+      .card-header-actions .m3-btn-filled span { display: none; }
+      .card-header-actions .m3-btn-filled {
+        padding: 10px;
+        min-width: 40px;
+        justify-content: center;
+      }
+      .client-row-content { flex-wrap: wrap; padding: 12px 12px; gap: 10px; }
+      .client-avatar { width: 42px; height: 42px; }
+      .client-avatar img { width: 42px; height: 42px; }
+      .client-info { flex: 1; min-width: 0; }
+      .client-name { font-size: 14px; }
+      .client-meta-row { gap: 6px; }
+      .client-meta-chip { font-size: 11px; }
+      .client-traffic { display: none; }
+      .client-actions {
+        width: 100%;
+        justify-content: flex-end;
+        gap: 6px;
+        padding-top: 6px;
+        border-top: 1px solid var(--outline-var);
+      }
+      .action-btn { width: 36px; height: 36px; }
+      .action-btn svg { width: 18px; height: 18px; }
+      .m3-dialog { max-width: 100%; margin: 0 8px; }
+      .m3-dialog-scrim {
+        align-items: flex-end;
+        padding: 0;
+      }
+      .m3-dialog {
+        border-radius: var(--r-2xl) var(--r-2xl) 0 0;
+        max-width: 100%;
+      }
+      .login-card { padding: 32px 20px 28px; }
+      .accent-panel { right: -24px; }
+    }
+
+    @media (max-width: 480px) {
+      #app { padding: 0 8px 48px; }
+      .client-traffic {
+        display: flex;
+        gap: 8px;
+        flex-direction: row;
+      }
+      .traffic-item {
+        flex-direction: row;
+        align-items: center;
+        gap: 4px;
+        min-width: unset;
+      }
+      .traffic-speed { font-size: 11px; }
+      .traffic-total { display: none; }
+      .traffic-label { display: none; }
+    }
+    @media (max-width: 360px) {
+      .client-traffic { display: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div v-cloak>
+
+      <!-- ══ AUTHENTICATED VIEW ══ -->
+      <div v-if="authenticated === true">
+
+        <!-- TOP APP BAR -->
+        <div class="m3-topbar">
+          <div class="topbar-brand">
+            <div class="topbar-logo">
+              <img src="./img/logo.svg" alt="AmneziaWG" />
+            </div>
+            <span class="topbar-title">AmneziaWG</span>
+          </div>
+
+          <div class="topbar-actions">
+            <!-- Charts toggle -->
+            <button v-if="uiChartType > 0"
+              @click="uiShowCharts = !uiShowCharts; toggleCharts()"
+              class="m3-icon-btn" :class="{ tonal: uiShowCharts }"
+              :title="$t('toggleCharts')">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75ZM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 0 1-1.875-1.875V8.625ZM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 0 1 3 19.875v-6.75Z" />
+              </svg>
+            </button>
+
+            <!-- Accent colour picker -->
+            <div class="accent-picker-wrap" id="accent-picker-wrap">
+              <button class="accent-dot-btn" id="accent-toggle-btn"
+                aria-label="Choose accent colour" title="Accent colour">
+                <span class="accent-dot-inner" id="accent-dot-preview"></span>
+              </button>
+              <div class="accent-panel" id="accent-panel" style="display:none" role="group" aria-label="Accent colours"></div>
+            </div>
+
+            <!-- Theme toggle -->
+            <button @click="toggleTheme" class="m3-icon-btn" :title="$t(`theme.${uiTheme}`)">
+              <svg v-if="uiTheme === 'light'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+              </svg>
+              <svg v-else-if="uiTheme === 'dark'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+              </svg>
+              <svg v-else xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12,2.2c-5.4,0-9.8,4.4-9.8,9.8s4.4,9.8,9.8,9.8s9.8-4.4,9.8-9.8S17.4,2.2,12,2.2z M3.8,12c0-4.5,3.7-8.2,8.2-8.2v16.5C7.5,20.2,3.8,16.5,3.8,12z"/>
+              </svg>
+            </button>
+
+            <!-- Logout -->
+            <button v-if="requiresPassword" class="logout-btn" @click="logout">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+              </svg>
+              <span>{{$t("logout")}}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- UPDATE BANNER -->
+        <div v-if="latestRelease" class="update-banner"
+          :title="`v${currentRelease} → v${latestRelease.version}`">
+          <div class="update-banner-text">
+            <strong>{{$t("updateAvailable")}}</strong>
+            <p>{{latestRelease.changelog}}</p>
+          </div>
+          <a href="https://github.com/wg-easy/wg-easy#updating" target="_blank" class="update-link">
+            {{$t("update")}} →
+          </a>
+        </div>
+
+        <!-- MAIN CARD -->
+        <div class="m3-card">
+          <div class="card-header">
+            <span class="card-header-title">{{$t("clients")}}</span>
+            <div class="card-header-actions">
+              <!-- Restore -->
+              <label :title="$t('titleRestoreConfig')" class="m3-btn-tonal" style="cursor:pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"></path>
+                </svg>
+                <span>{{$t("restore")}}</span>
+                <input id="inputRC" type="file" name="configurationfile" accept="text/*,.json" @change="restoreConfig" style="display:none" />
+              </label>
+              <!-- Backup -->
+              <a href="./api/wireguard/backup" :title="$t('titleBackupConfig')" class="m3-btn-tonal">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-16.5-3a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3m-19.5 0a4.5 4.5 0 0 1 .9-2.7L5.737 5.1a3.375 3.375 0 0 1 2.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 0 1 .9 2.7m0 0a3 3 0 0 1-3 3m0 3h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Zm-3 6h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Z"></path>
+                </svg>
+                <span>{{$t("backup")}}</span>
+              </a>
+              <!-- Sort -->
+              <button v-if="enableSortClient" @click="sortClient = !sortClient"
+                class="m3-icon-btn" :class="{ tonal: sortClient }" :title="$t('sort')">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5" />
+                </svg>
+              </button>
+              <!-- New Client -->
+              <button @click="clientCreate = true; clientCreateName = ''; clientExpiredDate = '';"
+                class="m3-btn-filled">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>{{$t("new")}}</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- CLIENT LIST -->
+          <div v-if="clients && clients.length > 0">
+            <div v-for="client in clients" :key="client.id" class="client-row">
+              <!-- Background charts -->
+              <div v-if="uiChartType" class="client-row-chart-rx" :class="uiChartType === 1 ? 'line-chart' : ''">
+                <apexchart width="100%" height="100%" :options="chartOptionsRX" :series="client.transferRxSeries" style="transform:scaleY(-1)"></apexchart>
+              </div>
+              <div v-if="uiChartType" class="client-row-chart-tx" :class="uiChartType === 1 ? 'line-chart' : ''">
+                <apexchart width="100%" height="100%" :options="chartOptionsTX" :series="client.transferTxSeries"></apexchart>
+              </div>
+
+              <div class="client-row-content">
+                <!-- Avatar -->
+                <div class="client-avatar">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                  </svg>
+                  <img v-if="client.avatar" :src="client.avatar" />
+                  <div v-if="client.latestHandshakeAt && ((new Date() - new Date(client.latestHandshakeAt)) < 1000*60*10)">
+                    <div class="online-dot-ping"></div>
+                    <div class="online-dot"></div>
+                  </div>
+                </div>
+
+                <!-- Info -->
+                <div class="client-info">
+                  <div class="client-name-row">
+                    <div class="client-name" :title="$t('createdOn') + dateTime(new Date(client.createdAt))">
+                      <input v-show="clientEditNameId === client.id" v-model="clientEditName"
+                        v-on:keyup.enter="updateClientName(client, clientEditName); clientEditName = null; clientEditNameId = null;"
+                        v-on:keyup.escape="clientEditName = null; clientEditNameId = null;"
+                        :ref="'client-' + client.id + '-name'" />
+                      <span v-show="clientEditNameId !== client.id">{{client.name}}</span>
+                    </div>
+                    <button class="edit-btn" v-show="clientEditNameId !== client.id"
+                      @click="clientEditName = client.name; clientEditNameId = client.id; setTimeout(() => $refs['client-' + client.id + '-name'][0].select(), 1);">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div class="client-meta-row">
+                    <!-- Address -->
+                    <span class="client-meta-chip" style="font-family: var(--font-mono)">
+                      <input v-show="clientEditAddressId === client.id" v-model="clientEditAddress"
+                        v-on:keyup.enter="updateClientAddress(client, clientEditAddress); clientEditAddress = null; clientEditAddressId = null;"
+                        v-on:keyup.escape="clientEditAddress = null; clientEditAddressId = null;"
+                        :ref="'client-' + client.id + '-address'"
+                        style="background:var(--surf-mid);border:none;border-bottom:2px solid var(--primary);color:var(--on-surf);outline:none;width:110px;font-size:12px;padding:2px 4px" />
+                      <span v-show="clientEditAddressId !== client.id">{{client.address}}</span>
+                      <button class="edit-btn" v-show="clientEditAddressId !== client.id"
+                        @click="clientEditAddress = client.address; clientEditAddressId = client.id; setTimeout(() => $refs['client-' + client.id + '-address'][0].select(), 1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+                        </svg>
+                      </button>
+                    </span>
+
+                    <!-- Inline traffic (when stats panel hidden) -->
+                    <template v-if="!uiTrafficStats">
+                      <span v-if="client.transferTx" class="client-meta-sep">·</span>
+                      <span v-if="client.transferTx" class="client-meta-chip" :title="$t('totalDownload') + bytes(client.transferTx)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                        {{client.transferTxCurrent | bytes}}/s
+                      </span>
+                      <span v-if="client.transferRx" class="client-meta-chip" :title="$t('totalUpload') + bytes(client.transferRx)">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                        {{client.transferRxCurrent | bytes}}/s
+                      </span>
+                    </template>
+
+                    <!-- Last seen -->
+                    <span class="client-meta-sep" v-if="client.latestHandshakeAt">·</span>
+                    <span class="client-meta-chip" v-if="client.latestHandshakeAt"
+                      :title="$t('lastSeen') + dateTime(new Date(client.latestHandshakeAt))">
+                      {{new Date(client.latestHandshakeAt) | timeago}}
+                    </span>
+
+                    <!-- One-time link -->
+                    <div v-if="enableOneTimeLinks && client.oneTimeLink"
+                      :ref="'client-' + client.id + '-link'"
+                      class="otl-row" style="width:100%">
+                      <a :href="'./cnf/' + client.oneTimeLink">{{document.location.protocol}}//{{document.location.host}}/cnf/{{client.oneTimeLink}}</a>
+                    </div>
+
+                    <!-- Expire date -->
+                    <span v-show="enableExpireTime" class="client-meta-chip">
+                      <input v-show="clientEditExpireDateId === client.id" v-model="clientEditExpireDate"
+                        v-on:keyup.enter="updateClientExpireDate(client, clientEditExpireDate); clientEditExpireDate = null; clientEditExpireDateId = null;"
+                        v-on:keyup.escape="clientEditExpireDate = null; clientEditExpireDateId = null;"
+                        :ref="'client-' + client.id + '-expire'"
+                        type="text"
+                        style="background:var(--surf-mid);border:none;border-bottom:2px solid var(--primary);color:var(--on-surf);outline:none;font-size:12px;padding:2px 4px" />
+                      <span v-show="clientEditExpireDateId !== client.id">{{client.expiredAt | expiredDateFormat}}</span>
+                      <button class="edit-btn" v-show="clientEditExpireDateId !== client.id"
+                        @click="clientEditExpireDate = client.expiredAt ? client.expiredAt.toISOString().slice(0,10) : 'yyyy-mm-dd'; clientEditExpireDateId = client.id; setTimeout(() => $refs['client-' + client.id + '-expire'][0].select(), 1);">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" /></svg>
+                      </button>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Traffic Stats Panel -->
+                <div v-if="uiTrafficStats" class="client-traffic">
+                  <div class="traffic-item" v-if="client.transferTx">
+                    <div class="traffic-label">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
+                      Down
+                    </div>
+                    <div class="traffic-speed">{{client.transferTxCurrent | bytes}}/s</div>
+                    <div class="traffic-total">{{bytes(client.transferTx)}}</div>
+                  </div>
+                  <div class="traffic-item" v-if="client.transferRx">
+                    <div class="traffic-label">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
+                      Up
+                    </div>
+                    <div class="traffic-speed">{{client.transferRxCurrent | bytes}}/s</div>
+                    <div class="traffic-total">{{bytes(client.transferRx)}}</div>
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="client-actions">
+                  <!-- Enable / Disable switch -->
+                  <div class="m3-switch" :class="{ on: client.enabled }"
+                    @click="client.enabled ? disableClient(client) : enableClient(client)"
+                    :title="client.enabled ? $t('disableClient') : $t('enableClient')">
+                    <div class="m3-switch-thumb"></div>
+                  </div>
+
+                  <!-- QR Code -->
+                  <button class="action-btn" :class="{ disabled: !client.downloadableConfig }"
+                    :disabled="!client.downloadableConfig"
+                    :title="!client.downloadableConfig ? $t('noPrivKey') : $t('showQR')"
+                    @click="qrcode = `./api/wireguard/client/${client.id}/qrcode.svg`">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                    </svg>
+                  </button>
+
+                  <!-- Download Config -->
+                  <a class="action-btn" :class="{ disabled: !client.downloadableConfig }"
+                    :href="'./api/wireguard/client/' + client.id + '/configuration'"
+                    :download="client.downloadableConfig ? 'configuration' : null"
+                    :title="!client.downloadableConfig ? $t('noPrivKey') : $t('downloadConfig')"
+                    @click="if(!client.downloadableConfig) { $event.preventDefault(); }">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  </a>
+
+                  <!-- One-time link -->
+                  <button v-if="enableOneTimeLinks" class="action-btn"
+                    :class="{ disabled: !client.downloadableConfig }"
+                    :disabled="!client.downloadableConfig"
+                    :title="!client.downloadableConfig ? $t('noPrivKey') : $t('OneTimeLink')"
+                    @click="if(client.downloadableConfig) { showOneTimeLink(client); }">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13.213 9.787a3.391 3.391 0 0 0-4.795 0l-3.425 3.426a3.39 3.39 0 0 0 4.795 4.794l.321-.304m-.321-4.49a3.39 3.39 0 0 0 4.795 0l3.424-3.426a3.39 3.39 0 0 0-4.794-4.795l-1.028.961"/>
+                    </svg>
+                  </button>
+
+                  <!-- Delete -->
+                  <button class="action-btn danger" :title="$t('deleteClient')" @click="clientDelete = client">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                  </button>
+                </div>
+              </div><!-- /client-row-content -->
+            </div><!-- /v-for -->
+          </div>
+
+          <!-- EMPTY STATE -->
+          <div v-if="clients && clients.length === 0" class="empty-state">
+            <div class="empty-state-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z" />
+              </svg>
+            </div>
+            <strong>{{$t("noClients")}}</strong>
+            <p>Add your first VPN client to get started.</p>
+            <button @click="clientCreate = true; clientCreateName = ''; clientExpiredDate = '';" class="m3-btn-filled">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              {{$t("newClient")}}
+            </button>
+          </div>
+
+          <!-- LOADING -->
+          <div v-if="clients === null" class="spinner-container">
+            <div class="m3-spinner"></div>
+          </div>
+        </div><!-- /m3-card -->
+
+        <!-- QR DIALOG -->
+        <div v-if="qrcode" class="m3-dialog-scrim" @click.self="qrcode = null">
+          <div class="qr-dialog">
+            <button class="qr-close" @click="qrcode = null">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <img :src="qrcode" />
+          </div>
+        </div>
+
+        <!-- CREATE DIALOG -->
+        <div v-if="clientCreate" class="m3-dialog-scrim" @click.self="clientCreate = null">
+          <div class="m3-dialog">
+            <div class="m3-dialog-content">
+              <div class="m3-dialog-icon primary">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+              </div>
+              <div class="m3-dialog-title">{{$t("newClient")}}</div>
+              <div class="m3-field">
+                <label>{{$t("name")}}</label>
+                <input type="text" v-model.trim="clientCreateName" :placeholder="$t('name')" autofocus />
+              </div>
+              <div class="m3-field" v-show="enableExpireTime">
+                <label>{{$t("ExpireDate")}}</label>
+                <input type="date" v-model.trim="clientExpiredDate" name="expireDate" />
+              </div>
+            </div>
+            <div class="m3-dialog-actions">
+              <button class="m3-btn-text" @click="clientCreate = null">{{$t("cancel")}}</button>
+              <button class="m3-btn-filled"
+                :class="{ disabled: !clientCreateName.length }"
+                :disabled="!clientCreateName.length"
+                @click="if(clientCreateName.length) { createClient(); clientCreate = null }">
+                {{$t("create")}}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- DELETE DIALOG -->
+        <div v-if="clientDelete" class="m3-dialog-scrim" @click.self="clientDelete = null">
+          <div class="m3-dialog">
+            <div class="m3-dialog-content">
+              <div class="m3-dialog-icon error">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                </svg>
+              </div>
+              <div class="m3-dialog-title">{{$t("deleteClient")}}</div>
+              <div class="m3-dialog-body">
+                {{$t("deleteDialog1")}} <strong style="color:var(--on-surf)">{{clientDelete.name}}</strong>? {{$t("deleteDialog2")}}
+              </div>
+            </div>
+            <div class="m3-dialog-actions">
+              <button class="m3-btn-text" @click="clientDelete = null">{{$t("cancel")}}</button>
+              <button class="m3-btn-filled"
+                style="background:var(--err);color:var(--on-err)"
+                @click="deleteClient(clientDelete); clientDelete = null">
+                {{$t("deleteClient")}}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /authenticated -->
+
+      <!-- ══ LOGIN VIEW ══ -->
+      <div v-if="authenticated === false" class="login-screen">
+        <div class="login-card">
+          <div class="login-logo">
+            <img src="./img/logo.svg" alt="AmneziaWG" />
+          </div>
+          <div class="login-title">AmneziaWG</div>
+          <div class="login-subtitle">Enter your password to continue</div>
+
+          <div class="m3-field">
+            <label>{{$t("password")}}</label>
+            <input type="password" name="password" v-model="password"
+              autocomplete="current-password"
+              @keyup.enter="if(password) login($event)" />
+          </div>
+
+          <div v-if="rememberMeEnabled" class="switch-row">
+            <label for="rememberToggle">{{$t("rememberMe")}}</label>
+            <div class="m3-switch" :class="{ on: remember }"
+              id="rememberToggle"
+              @click="remember = !remember"
+              style="cursor:pointer">
+              <div class="m3-switch-thumb"></div>
+            </div>
+          </div>
+
+          <div class="login-actions">
+            <button v-if="authenticating" class="m3-btn-filled disabled" disabled>
+              <div class="m3-spinner" style="width:18px;height:18px;border-width:2px"></div>
+            </button>
+            <button v-else class="m3-btn-filled"
+              :class="{ disabled: !password }"
+              :disabled="!password"
+              @click="login">
+              {{$t("signIn")}}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ INITIAL LOADING ══ -->
+      <div v-if="authenticated === null"
+        style="display:flex;align-items:center;justify-content:center;min-height:100vh">
+        <div class="m3-spinner"></div>
+      </div>
+
+    </div><!-- /v-cloak -->
+  </div><!-- /#app -->
+
+  <script src="./js/vendor/vue.min.js"></script>
+  <script src="./js/vendor/vue-i18n.min.js"></script>
+  <script src="./js/vendor/apexcharts.min.js"></script>
+  <script src="./js/vendor/vue-apexcharts.min.js"></script>
+  <script src="./js/vendor/sha256.min.js"></script>
+  <script src="./js/vendor/timeago.full.min.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/i18n.js"></script>
+  <script src="./js/app.js"></script>
+
+  <script>
+  /* ══════════════════════════════════════════
+     M3 EXPRESSIVE — ACCENT + THEME CONTROLLER
+  ══════════════════════════════════════════ */
+  (function () {
+    const ACCENTS = [
+      { h: 220, label: 'Blue',    bg: 'hsl(220,85%,55%)' },
+      { h: 270, label: 'Violet',  bg: 'hsl(270,75%,58%)' },
+      { h: 200, label: 'Cyan',    bg: 'hsl(200,85%,45%)' },
+      { h: 160, label: 'Teal',    bg: 'hsl(160,70%,40%)' },
+      { h:  30, label: 'Amber',   bg: 'hsl(30,90%,50%)'  },
+      { h:  10, label: 'Coral',   bg: 'hsl(10,80%,55%)'  },
+      { h: 330, label: 'Pink',    bg: 'hsl(330,75%,58%)' },
+      { h:   0, label: 'Red',     bg: 'hsl(0,80%,55%)'   },
+      { h: 250, label: 'Indigo',  bg: 'hsl(250,80%,60%)' },
+      { h: 130, label: 'Green',   bg: 'hsl(130,65%,38%)' },
+    ];
+
+    const LS_ACCENT = 'm3-accent-h';
+    const LS_THEME  = 'theme';
+
+    const html = document.documentElement;
+    let accentH = parseInt(localStorage.getItem(LS_ACCENT) || '220', 10);
+    let panelOpen = false;
+
+    /* ── Apply accent ── */
+    function applyAccent(h) {
+      accentH = h;
+      html.style.setProperty('--acc-h', h);
+      localStorage.setItem(LS_ACCENT, h);
+      const preview = document.getElementById('accent-dot-preview');
+      if (preview) preview.style.background = `hsl(${h},85%,55%)`;
+      document.querySelectorAll('.accent-panel-swatch').forEach((el, i) => {
+        el.classList.toggle('active', ACCENTS[i].h === h);
+      });
+    }
+
+    /* ── Apply theme ── */
+    function applyTheme(theme) {
+      const t = theme === 'dark'  ? 'dark'
+              : theme === 'light' ? 'light'
+              : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      html.setAttribute('data-theme', t);
+    }
+
+    /* ── Build accent panel ── */
+    function buildPanel() {
+      const panel = document.getElementById('accent-panel');
+      if (!panel) return;
+      panel.innerHTML = '';
+
+      /* small label */
+      const lbl = document.createElement('div');
+      lbl.textContent = 'Accent colour';
+      lbl.style.cssText = 'width:100%;font-size:11px;font-weight:500;color:var(--on-surf-var);letter-spacing:.3px;margin-bottom:2px;text-transform:uppercase';
+      panel.appendChild(lbl);
+
+      ACCENTS.forEach((acc) => {
+        const btn = document.createElement('button');
+        btn.className = 'accent-panel-swatch' + (acc.h === accentH ? ' active' : '');
+        btn.style.background = acc.bg;
+        btn.title = acc.label;
+        btn.setAttribute('aria-label', acc.label);
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          applyAccent(acc.h);
+        });
+        panel.appendChild(btn);
+      });
+    }
+
+    /* ── Toggle panel ── */
+    function togglePanel() {
+      const panel = document.getElementById('accent-panel');
+      if (!panel) return;
+      panelOpen = !panelOpen;
+      panel.style.display = panelOpen ? 'flex' : 'none';
+      if (panelOpen) panel.style.flexWrap = 'wrap';
+    }
+
+    /* ── Init ── */
+    document.addEventListener('DOMContentLoaded', () => {
+      /* initial accent */
+      applyAccent(accentH);
+
+      /* initial theme */
+      const savedTheme = localStorage.getItem(LS_THEME) || 'auto';
+      applyTheme(savedTheme);
+
+      /* build swatches */
+      buildPanel();
+
+      /* toggle button */
+      const toggleBtn = document.getElementById('accent-toggle-btn');
+      if (toggleBtn) {
+        toggleBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          togglePanel();
+        });
+      }
+
+      /* close on outside click */
+      document.addEventListener('click', (e) => {
+        const wrap = document.getElementById('accent-picker-wrap');
+        if (wrap && !wrap.contains(e.target) && panelOpen) {
+          panelOpen = false;
+          const panel = document.getElementById('accent-panel');
+          if (panel) panel.style.display = 'none';
+        }
+      });
+
+      /* sync theme changes from Vue's toggleTheme (it mutates html class) */
+      const observer = new MutationObserver(() => {
+        const cls = html.className;
+        const attr = html.getAttribute('data-theme');
+        if (!attr) {
+          if (cls.includes('dark')) applyTheme('dark');
+          else applyTheme('light');
+        }
+      });
+      observer.observe(html, { attributes: true, attributeFilter: ['class'] });
+
+      /* also re-apply accent after Vue mounts (it may reset CSS vars) */
+      setTimeout(() => applyAccent(accentH), 300);
+    });
+  })();
+  </script>
+</body>
+</html>

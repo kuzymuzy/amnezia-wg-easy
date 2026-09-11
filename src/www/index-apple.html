@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>AmneziaWG</title>
+  <meta charset="utf-8"/>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./img/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="./img/apple-touch-icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<style>
+  [v-cloak] { display: none; }
+
+  /* ================================================================
+     Amnezia Apple — frosted-glass system UI. Fully custom.
+     No Tailwind / app.css. SF-style type, translucent "vibrancy"
+     surfaces with backdrop blur, one blue accent, iOS pill switch.
+     Light = #F5F5F7 glass; Dark = pure black glass.
+  ================================================================ */
+  :root {
+    --bg: #f5f5f7;
+    --glass: rgba(255, 255, 255, .72);
+    --glass-2: rgba(255, 255, 255, .55);
+    --glass-3: rgba(0, 0, 0, .06);
+    --hairline: rgba(0, 0, 0, .09);
+    --hairline-strong: rgba(0, 0, 0, .16);
+    --text: #1d1d1f;
+    --text-dim: #6e6e73;
+    --text-faint: #86868b;
+    --accent: #007aff;
+    --accent-hover: #0071eb;
+    --accent-soft: rgba(0, 122, 255, .10);
+    --green: #34c759;
+    --amber: #ff9500;
+    --danger: #ff3b30;
+    --danger-soft: rgba(255, 59, 48, .10);
+    --input: rgba(255, 255, 255, .85);
+    --overlay: rgba(0, 0, 0, .35);
+    --focus: rgba(0, 122, 255, .30);
+    --ring: 0 0 0 4px rgba(0, 122, 255, .18);
+    --shadow: 0 20px 60px -25px rgba(0, 0, 0, .30);
+    --shadow-lg: 0 40px 100px -30px rgba(0, 0, 0, .45);
+  }
+
+  .dark {
+    --bg: #000000;
+    --glass: rgba(30, 30, 32, .72);
+    --glass-2: rgba(255, 255, 255, .07);
+    --glass-3: rgba(255, 255, 255, .14);
+    --hairline: rgba(255, 255, 255, .12);
+    --hairline-strong: rgba(255, 255, 255, .24);
+    --text: #f5f5f7;
+    --text-dim: #a1a1a6;
+    --text-faint: #7c7c82;
+    --accent: #0a84ff;
+    --accent-hover: #409cff;
+    --accent-soft: rgba(10, 132, 255, .16);
+    --green: #30d158;
+    --amber: #ffd60a;
+    --danger: #ff453a;
+    --danger-soft: rgba(255, 69, 58, .16);
+    --input: rgba(30, 30, 32, .85);
+    --overlay: rgba(0, 0, 0, .55);
+    --focus: rgba(10, 132, 255, .35);
+    --ring: 0 0 0 4px rgba(10, 132, 255, .25);
+    --shadow: 0 24px 70px -28px rgba(0, 0, 0, .80);
+    --shadow-lg: 0 40px 110px -30px rgba(0, 0, 0, .95);
+  }
+
+  /* ---------- reset / base ---------- */
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    position: relative;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.005em;
+    transition: background-color .25s ease, color .25s ease;
+  }
+  img, svg { display: block; max-width: 100%; }
+  button { font-family: inherit; color: inherit; background: none; border: none; padding: 0; cursor: pointer; }
+  a { color: inherit; text-decoration: none; }
+  input { font-family: inherit; color: inherit; }
+  input[type="submit"] { -webkit-appearance: none; appearance: none; cursor: pointer; }
+  [disabled] { cursor: not-allowed; }
+
+  /* soft ambient glow */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: -12%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+      radial-gradient(80rem 60rem at 12% -10%, rgba(0, 122, 255, .05), transparent 60%),
+      radial-gradient(70rem 55rem at 100% 0%, rgba(52, 199, 89, .04), transparent 60%);
+  }
+  .dark body::before {
+    background:
+      radial-gradient(80rem 60rem at 12% -10%, rgba(10, 132, 255, .10), transparent 60%),
+      radial-gradient(70rem 55rem at 100% 0%, rgba(48, 209, 88, .05), transparent 60%);
+  }
+
+  :focus-visible { outline: none; box-shadow: var(--ring); border-radius: 10px; }
+  ::selection { background: var(--accent-soft); }
+
+  .i { width: 18px; height: 18px; }
+  .awg-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .is-disabled { opacity: .4; pointer-events: none; }
+
+  /* ---------- shell / topbar ---------- */
+  .awg-shell { max-width: 1060px; margin: 0 auto; padding: 0 20px 72px; }
+
+  .awg-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 22px;
+    margin: 0 -22px 14px;
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    background: color-mix(in srgb, var(--glass) 72%, transparent);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .awg-brand { display: flex; align-items: center; gap: 11px; }
+  .awg-logo { width: 34px; height: 34px; border-radius: 8px; }
+  .awg-wordmark { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+
+  .awg-topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+  .awg-btn-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    color: var(--text-dim);
+    background: var(--glass-2);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    transition: .2s ease;
+  }
+  .awg-btn-icon:hover { color: var(--accent); background: var(--accent-soft); }
+  .awg-btn-icon.is-active { color: var(--accent); background: var(--accent-soft); }
+
+  .awg-btn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-dim);
+    transition: .2s ease;
+  }
+  .awg-btn-link:hover { color: var(--danger); background: var(--danger-soft); }
+
+  /* ---------- update banner ---------- */
+  .awg-banner {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 14px 18px;
+    margin: 20px 0;
+    border-radius: 16px;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow);
+  }
+  .awg-banner-text { flex: 1; min-width: 0; }
+  .awg-banner-title { margin: 0; font-size: 15px; font-weight: 700; }
+  .awg-banner-title::before { content: "● "; color: var(--amber); }
+  .awg-banner-text p:last-child { margin: 2px 0 0; font-size: 13px; color: var(--text-dim); }
+  .awg-btn-light {
+    flex: none;
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #fff;
+    background: var(--accent);
+    transition: .2s ease;
+  }
+  .awg-btn-light:hover { background: var(--accent-hover); }
+
+  /* ---------- stats ---------- */
+  .awg-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin: 20px 0;
+  }
+  .awg-stat {
+    padding: 18px 20px;
+    border-radius: 18px;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow);
+  }
+  .awg-stat-value {
+    display: block;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .awg-stat-label { display: block; margin-top: 2px; font-size: 13px; font-weight: 500; color: var(--text-dim); }
+
+  /* ---------- panel ---------- */
+  .awg-panel {
+    border-radius: 18px;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .awg-panel-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  .awg-panel-title { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; }
+  .awg-toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+  /* iOS-style segmented capsule */
+  .awg-segment {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 11px;
+    background: var(--glass-3);
+  }
+  .awg-tool-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 13px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-dim);
+    transition: .15s ease;
+    white-space: nowrap;
+  }
+  .awg-tool-item:hover { color: var(--text); background: var(--glass-2); }
+  .awg-tool-item .i { width: 15px; height: 15px; }
+
+  .awg-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: .2s ease;
+  }
+  .awg-btn-primary { background: var(--accent); color: #fff; box-shadow: 0 8px 22px -8px var(--accent); }
+  .awg-btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+  .awg-btn-primary.is-disabled { opacity: .45; box-shadow: none; pointer-events: none; }
+  .awg-btn-ghost { color: var(--text); background: var(--glass-2); }
+  .awg-btn-ghost:hover { background: var(--glass-3); }
+  .awg-btn-ghost.is-danger { color: var(--danger); background: var(--danger-soft); }
+  .awg-btn-ghost.is-danger:hover { background: var(--danger); color: #fff; }
+
+  /* ---------- client rows ---------- */
+  .awg-client { position: relative; overflow: hidden; border-bottom: 1px solid var(--hairline); }
+  .awg-client:last-child { border-bottom: none; }
+  .awg-client:hover { background: var(--glass-2); }
+
+  .awg-chart { position: absolute; left: 0; right: 0; height: 26px; z-index: 0; pointer-events: none; }
+  .awg-chart-tx { bottom: 0; }
+  .awg-chart-rx { top: 0; }
+  .line-chart .apexcharts-svg { transform: translateY(3px); }
+  .apexcharts-line { stroke: var(--accent) !important; }
+  .awg-chart-rx .apexcharts-line { stroke: var(--green) !important; }
+
+  .awg-client-main {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 15px 22px;
+  }
+
+  /* avatar: circular initials */
+  .awg-avatar {
+    position: relative;
+    flex: none;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 19px;
+    color: #fff;
+    background: var(--av-bg);
+  }
+  .awg-av-0 { --av-bg: #007aff; }
+  .awg-av-1 { --av-bg: #34c759; }
+  .awg-av-2 { --av-bg: #ff9500; }
+  .awg-av-3 { --av-bg: #ff3b30; }
+  .awg-av-4 { --av-bg: #af52de; }
+  .awg-av-5 { --av-bg: #ff2d55; }
+  .awg-avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+  .awg-online { position: absolute; right: 0; bottom: 0; width: 13px; height: 13px; }
+  .awg-online-dot {
+    position: absolute; right: 0; bottom: 0;
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--green);
+    border: 2px solid var(--glass);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  /* client info */
+  .awg-client-info { flex: 1; min-width: 0; }
+  .awg-client-name { display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  .awg-client-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 16px; margin-top: 2px; font-size: 13px; color: var(--text-dim); }
+  .awg-mono { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; font-size: 12px; }
+  .awg-lastseen { color: var(--text-faint); white-space: nowrap; }
+  .awg-traffic { display: flex; gap: 16px; font-size: 12px; }
+  .awg-traffic i { font-style: normal; opacity: .6; }
+  .awg-onetime { white-space: nowrap; }
+  .awg-onetime a { color: var(--accent); }
+  .awg-onetime a:hover { text-decoration: underline; }
+
+  .awg-edit {
+    display: inline-flex;
+    padding: 2px;
+    border-radius: 6px;
+    color: var(--text-faint);
+    opacity: 0;
+    transition: .15s ease;
+  }
+  .awg-client-name:hover .awg-edit,
+  .awg-mono:hover .awg-edit { opacity: 1; }
+  .awg-edit:hover { color: var(--accent); }
+  .awg-edit .i { width: 13px; height: 13px; }
+
+  .awg-input-inline {
+    min-width: 60px;
+    padding: 3px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--hairline-strong);
+    background: var(--input);
+    color: var(--text);
+    font: inherit;
+    outline: none;
+  }
+  .awg-input-inline:focus { border-color: var(--accent); box-shadow: var(--ring); }
+
+  /* actions */
+  .awg-client-actions { display: flex; align-items: center; gap: 8px; flex: none; }
+  .awg-switch {
+    position: relative;
+    flex: none;
+    width: 46px; height: 28px;
+    border-radius: 999px;
+    background: var(--glass-3);
+    border: 1px solid var(--hairline);
+    transition: .22s cubic-bezier(.4, 0, .2, 1);
+  }
+  .awg-switch::after {
+    content: "";
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .28);
+    transition: .22s cubic-bezier(.4, 0, .2, 1);
+  }
+  .awg-switch.is-on { background: var(--green); border-color: transparent; }
+  .awg-switch.is-on::after { transform: translateX(18px); }
+
+  /* ---------- empty / loading ---------- */
+  .awg-empty { padding: 52px 20px; text-align: center; color: var(--text-dim); }
+  .awg-empty p { margin: 0 0 18px; font-size: 15px; }
+  .awg-loader {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 200px; color: var(--text-faint);
+  }
+  .awg-spinner {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--glass-3);
+    border-top-color: var(--accent);
+    animation: awg-spin .8s linear infinite;
+  }
+  @keyframes awg-spin { to { transform: rotate(360deg); } }
+
+  /* ---------- modals ---------- */
+  .awg-modal-wrap {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .awg-modal-backdrop { position: absolute; inset: 0; background: var(--overlay); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  .awg-modal {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    padding: 28px 26px;
+    border-radius: 22px;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+    animation: awg-pop .25s cubic-bezier(.2, .9, .3, 1.2);
+  }
+  @keyframes awg-pop { from { transform: scale(.94) translateY(10px); opacity: 0; } }
+  .awg-modal-close {
+    position: absolute;
+    top: 14px; right: 14px;
+    display: inline-flex;
+    width: 30px; height: 30px;
+    align-items: center; justify-content: center;
+    border-radius: 50%;
+    color: var(--text-faint);
+    transition: .15s ease;
+  }
+  .awg-modal-close:hover { color: var(--text); background: var(--glass-2); }
+  .awg-modal-icon {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 54px; height: 54px;
+    margin-bottom: 14px;
+    border-radius: 16px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), #5ac8fa);
+    box-shadow: 0 12px 30px -10px var(--accent);
+  }
+  .awg-modal-icon .i { width: 24px; height: 24px; }
+  .awg-modal-icon.is-danger { background: linear-gradient(135deg, var(--danger), #ff6961); box-shadow: 0 12px 30px -10px var(--danger); }
+  .awg-modal-title { margin: 0 0 4px; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+  .awg-modal-sub { margin: 0 0 20px; font-size: 14px; color: var(--text-dim); }
+  .awg-modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+  .awg-modal-actions .awg-btn { flex: 1; }
+
+  .awg-input {
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--hairline-strong);
+    background: var(--input);
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    transition: .15s ease;
+  }
+  .awg-input::placeholder { color: var(--text-faint); }
+  .awg-input:focus { border-color: var(--accent); box-shadow: var(--ring); }
+  .awg-field { margin-top: 14px; text-align: left; }
+  .awg-label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+
+  .awg-qr {
+    margin: 0 auto;
+    width: 240px; height: 240px;
+    border-radius: 12px;
+    background: #fff;
+    padding: 8px;
+  }
+
+  /* ---------- login ---------- */
+  .awg-login { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 40px); padding: 20px; }
+  .awg-login-card {
+    width: 100%;
+    max-width: 380px;
+    padding: 44px 34px 32px;
+    border-radius: 26px;
+    background: var(--glass);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-lg);
+    text-align: center;
+  }
+  .awg-login-logo { width: 66px; height: 66px; margin: 0 auto 18px; border-radius: 15px; }
+  .awg-login-title { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.02em; color: var(--text); }
+  .awg-login-sub { margin: 6px 0 26px; font-size: 14px; color: var(--text-dim); }
+  .awg-login-card form { display: flex; flex-direction: column; gap: 14px; }
+  .awg-login-card .awg-input { text-align: center; }
+
+  .awg-remember {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--text-dim);
+    cursor: pointer;
+  }
+  .awg-check {
+    position: relative;
+    width: 44px; height: 26px;
+    border-radius: 999px;
+    background: var(--glass-3);
+    border: 1px solid var(--hairline);
+    transition: .22s cubic-bezier(.4, 0, .2, 1);
+    flex: none;
+  }
+  .awg-check::after {
+    content: "";
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .28);
+    transition: .22s cubic-bezier(.4, 0, .2, 1);
+  }
+  .awg-check.is-on { background: var(--green); border-color: transparent; }
+  .awg-check.is-on::after { transform: translateX(18px); }
+
+  /* ---------- scrollbar ---------- */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--glass-3); border: 2px solid var(--bg); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--hairline-strong); }
+
+  /* ---------- responsive ---------- */
+  @media (max-width: 640px) {
+    .awg-shell { padding: 0 14px 56px; }
+    .awg-topbar { margin: 0 -14px 8px; padding: 10px 14px; }
+    .awg-wordmark { font-size: 16px; }
+    .awg-client-main { flex-wrap: wrap; gap: 12px; }
+    .awg-client-actions { margin-left: auto; }
+    .awg-panel-head { flex-direction: column; align-items: flex-start; }
+    .awg-banner { flex-direction: column; align-items: stretch; }
+  }
+</style>
+
+<body>
+  <div id="app">
+    <div v-cloak class="awg-shell">
+
+      <!-- ============ AUTHENTICATED ============ -->
+      <template v-if="authenticated === true">
+        <header class="awg-topbar">
+          <div class="awg-brand">
+            <img src="./img/logo.svg" class="awg-logo" alt="AmneziaWG" />
+            <span class="awg-wordmark">AmneziaWG</span>
+          </div>
+          <div class="awg-topbar-actions">
+            <!-- Show / hide charts -->
+            <label v-if="uiChartType > 0" class="awg-btn-icon" :class="uiShowCharts ? 'is-active' : ''" :title="$t('toggleCharts')">
+              <input type="checkbox" class="awg-sr" v-model="uiShowCharts" @change="toggleCharts">
+              <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
+                  d="M3 13.125C3 12.504 3.504 12 4.125 12h.75c.621 0 1.125.504 1.125 1.125v6.75C6 20.496 5.496 21 4.875 21h-.75A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h.75c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-.75a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h.75c.621 0 1.125.504 1.125 1.125v15.75c0 .621-.504 1.125-1.125 1.125h-.75a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+              </svg>
+            </label>
+            <!-- Dark / light theme -->
+            <button class="awg-btn-icon" @click="toggleTheme" :title="$t(`theme.${uiTheme}`)">
+              <svg v-if="uiTheme === 'light'" class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+              </svg>
+              <svg v-else-if="uiTheme === 'dark'" class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+              </svg>
+              <svg v-else class="i" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12,2.2c-5.4,0-9.8,4.4-9.8,9.8s4.4,9.8,9.8,9.8s9.8-4.4,9.8-9.8S17.4,2.2,12,2.2z M3.8,12c0-4.5,3.7-8.2,8.2-8.2v16.5C7.5,20.2,3.8,16.5,3.8,12z" />
+              </svg>
+            </button>
+            <button v-if="requiresPassword" class="awg-btn-link" @click="logout">
+              {{$t("logout")}}
+              <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          </div>
+        </header>
+
+        <!-- Update available -->
+        <div v-if="latestRelease" class="awg-banner" :title="`v${currentRelease} → v${latestRelease.version}`">
+          <div class="awg-banner-text">
+            <p class="awg-banner-title">{{$t("updateAvailable")}}</p>
+            <p>{{latestRelease.changelog}}</p>
+          </div>
+          <a href="https://github.com/wg-easy/wg-easy#updating" target="_blank" class="awg-btn-light">{{$t("update")}} →</a>
+        </div>
+
+        <!-- Stats -->
+        <section v-if="clients" class="awg-stats">
+          <div class="awg-stat">
+            <span class="awg-stat-value">{{clients.filter(c => c.latestHandshakeAt && ((new Date() - new Date(c.latestHandshakeAt) < 1000 * 60 * 10))).length}}</span>
+            <span class="awg-stat-label">Online</span>
+          </div>
+          <div class="awg-stat">
+            <span class="awg-stat-value">{{clients.length}}</span>
+            <span class="awg-stat-label">{{$t("clients")}}</span>
+          </div>
+          <div class="awg-stat">
+            <span class="awg-stat-value">{{(clients.reduce((s,c)=>s+(c.transferTx||0)+(c.transferRx||0),0)) | bytes}}</span>
+            <span class="awg-stat-label">Traffic</span>
+          </div>
+        </section>
+
+        <!-- Clients -->
+        <div class="awg-panel">
+          <div class="awg-panel-head">
+            <h2 class="awg-panel-title">{{$t("clients")}}</h2>
+            <div class="awg-toolbar">
+              <div class="awg-segment">
+                <!-- Restore configuration -->
+                <label for="inputRC" :title="$t('titleRestoreConfig')" class="awg-tool-item">
+                  <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                  </svg>
+                  <span class="awg-tool-label">{{$t("restore")}}</span>
+                  <input id="inputRC" type="file" name="configurationfile" accept="text/*,.json" @change="restoreConfig" class="awg-sr"/>
+                </label>
+                <!-- Backup configuration -->
+                <a href="./api/wireguard/backup" :title="$t('titleBackupConfig')" class="awg-tool-item">
+                  <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-16.5-3a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3m-19.5 0a4.5 4.5 0 0 1 .9-2.7L5.737 5.1a3.375 3.375 0 0 1 2.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 0 1 .9 2.7m0 0a3 3 0 0 1-3 3m0 3h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Zm-3 6h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Z" />
+                  </svg>
+                  <span class="awg-tool-label">{{$t("backup")}}</span>
+                </a>
+                <!-- Sort client -->
+                <button v-if="enableSortClient" class="awg-tool-item" @click="sortClient = !sortClient;">
+                  <svg class="i" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                      d="M10 3a1 1 0 01.707.293l3 3a1 1 0 01-1.414 1.414L11 6.414V13a1 1 0 11-2 0V6.414L7.707 7.707a1 1 0 01-1.414-1.414l3-3A1 1 0 0110 3zm-4.707 10.707a1 1 0 01-1.414-1.414L5 11.414V5a1 1 0 112 0v6.414l1.293-1.293a1 1 0 011.414 1.414l-3 3z"
+                      clip-rule="evenodd" />
+                  </svg>
+                  <span class="awg-tool-label">{{$t("sort")}}</span>
+                </button>
+              </div>
+              <!-- New client -->
+              <button class="awg-btn awg-btn-primary"
+                @click="clientCreate = true; clientCreateName = ''; clientExpiredDate = '';">
+                <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>{{$t("new")}}</span>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <!-- Client rows -->
+            <div v-if="clients && clients.length > 0" v-for="client in clients" :key="client.id"
+              class="awg-client"
+              :class="{ 'is-online': client.latestHandshakeAt && ((new Date() - new Date(client.latestHandshakeAt) < 1000 * 60 * 10)) }">
+
+              <!-- Charts -->
+              <div v-if="uiChartType" :class="`awg-chart awg-chart-tx ${uiChartType === 1 && 'line-chart'}`">
+                <apexchart width="100%" height="100%" :options="chartOptionsTX" :series="client.transferTxSeries"></apexchart>
+              </div>
+              <div v-if="uiChartType" :class="`awg-chart awg-chart-rx ${uiChartType === 1 && 'line-chart'}`">
+                <apexchart width="100%" height="100%" :options="chartOptionsRX" :series="client.transferRxSeries" style="transform: scaleY(-1);"></apexchart>
+              </div>
+
+              <div class="awg-client-main">
+                <!-- Avatar -->
+                <div class="awg-avatar" :class="'awg-av-' + (client.id % 6)">
+                  <img v-if="client.avatar" :src="client.avatar" class="awg-avatar-img" />
+                  <span v-else class="awg-avatar-letter">{{ (client.name || '?').charAt(0) }}</span>
+                  <span v-if="client.latestHandshakeAt && ((new Date() - new Date(client.latestHandshakeAt) < 1000 * 60 * 10))" class="awg-online">
+                    <span class="awg-online-dot"></span>
+                  </span>
+                </div>
+
+                <!-- Name & meta -->
+                <div class="awg-client-info">
+                  <!-- Name -->
+                  <div class="awg-client-name" :title="$t('createdOn') + dateTime(new Date(client.createdAt))">
+                    <input v-show="clientEditNameId === client.id" v-model="clientEditName"
+                      v-on:keyup.enter="updateClientName(client, clientEditName); clientEditName = null; clientEditNameId = null;"
+                      v-on:keyup.escape="clientEditName = null; clientEditNameId = null;"
+                      :ref="'client-' + client.id + '-name'" class="awg-input-inline" />
+                    <span v-show="clientEditNameId !== client.id" class="awg-name-text">{{client.name}}</span>
+                    <button v-show="clientEditNameId !== client.id" class="awg-edit"
+                      @click="clientEditName = client.name; clientEditNameId = client.id; setTimeout(() => $refs['client-' + client.id + '-name'][0].select(), 1);">
+                      <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- Meta -->
+                  <div class="awg-client-meta">
+                    <!-- Address -->
+                    <span class="awg-mono">
+                      <input v-show="clientEditAddressId === client.id" v-model="clientEditAddress"
+                        v-on:keyup.enter="updateClientAddress(client, clientEditAddress); clientEditAddress = null; clientEditAddressId = null;"
+                        v-on:keyup.escape="clientEditAddress = null; clientEditAddressId = null;"
+                        :ref="'client-' + client.id + '-address'" class="awg-input-inline" />
+                      <span v-show="clientEditAddressId !== client.id">{{client.address}}</span>
+                      <button v-show="clientEditAddressId !== client.id" class="awg-edit"
+                        @click="clientEditAddress = client.address; clientEditAddressId = client.id; setTimeout(() => $refs['client-' + client.id + '-address'][0].select(), 1);">
+                        <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                    </span>
+
+                    <!-- Inline Transfer TX -->
+                    <span v-if="!uiTrafficStats && client.transferTx" class="awg-mono" :title="$t('totalDownload') + bytes(client.transferTx)">
+                      <svg class="i" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:12px;height:12px;display:inline-block;vertical-align:-2px;">
+                        <path fill-rule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                      </svg>
+                      {{client.transferTxCurrent | bytes}}/s
+                    </span>
+
+                    <!-- Inline Transfer RX -->
+                    <span v-if="!uiTrafficStats && client.transferRx" class="awg-mono" :title="$t('totalUpload') + bytes(client.transferRx)">
+                      <svg class="i" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" style="width:12px;height:12px;display:inline-block;vertical-align:-2px;">
+                        <path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                      </svg>
+                      {{client.transferRxCurrent | bytes}}/s
+                    </span>
+
+                    <!-- Last seen -->
+                    <span class="awg-lastseen" v-if="client.latestHandshakeAt" :title="$t('lastSeen') + dateTime(new Date(client.latestHandshakeAt))">
+                      {{!uiTrafficStats ? " · " : ""}}{{new Date(client.latestHandshakeAt) | timeago}}
+                    </span>
+
+                    <!-- One-time link -->
+                    <span v-if="enableOneTimeLinks && client.oneTimeLink !== null && client.oneTimeLink !== ''" :ref="'client-' + client.id + '-link'" class="awg-onetime">
+                      <a :href="'./cnf/' + client.oneTimeLink + ''">{{document.location.protocol}}//{{document.location.host}}/cnf/{{client.oneTimeLink}}</a>
+                    </span>
+
+                    <!-- Expire date -->
+                    <span v-show="enableExpireTime" class="awg-mono">
+                      <input v-show="clientEditExpireDateId === client.id" v-model="clientEditExpireDate"
+                        v-on:keyup.enter="updateClientExpireDate(client, clientEditExpireDate); clientEditExpireDate = null; clientEditExpireDateId = null;"
+                        v-on:keyup.escape="clientEditExpireDate = null; clientEditExpireDateId = null;"
+                        :ref="'client-' + client.id + '-expire'" type="text" class="awg-input-inline" />
+                      <span v-show="clientEditExpireDateId !== client.id">{{client.expiredAt | expiredDateFormat}}</span>
+                      <button v-show="clientEditExpireDateId !== client.id" class="awg-edit"
+                        @click="clientEditExpireDate = client.expiredAt ? client.expiredAt.toISOString().slice(0, 10) : 'yyyy-mm-dd'; clientEditExpireDateId = client.id; setTimeout(() => $refs['client-' + client.id + '-expire'][0].select(), 1);">
+                        <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                    </span>
+
+                    <!-- Traffic stats -->
+                    <span v-if="uiTrafficStats" class="awg-traffic">
+                      <span :title="$t('totalDownload') + bytes(client.transferTx)">
+                        {{client.transferTxCurrent | bytes}}/s <i>{{bytes(client.transferTx)}}</i>
+                      </span>
+                      <span :title="$t('totalUpload') + bytes(client.transferRx)">
+                        {{client.transferRxCurrent | bytes}}/s <i>{{bytes(client.transferRx)}}</i>
+                      </span>
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="awg-client-actions">
+                  <!-- Enable / disable -->
+                  <div class="awg-switch" :class="client.enabled === true ? 'is-on' : ''"
+                    :title="client.enabled === true ? $t('disableClient') : $t('enableClient')"
+                    @click="client.enabled === true ? disableClient(client) : enableClient(client)"></div>
+
+                  <!-- QR -->
+                  <button class="awg-btn-icon" :disabled="!client.downloadableConfig"
+                    :class="{ 'is-disabled': !client.downloadableConfig }"
+                    :title="!client.downloadableConfig ? $t('noPrivKey') : $t('showQR')"
+                    @click="qrcode = `./api/wireguard/client/${client.id}/qrcode.svg`">
+                    <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                    </svg>
+                  </button>
+
+                  <!-- Download config -->
+                  <a class="awg-btn-icon" :disabled="!client.downloadableConfig"
+                    :href="'./api/wireguard/client/' + client.id + '/configuration'"
+                    :download="client.downloadableConfig ? 'configuration' : null"
+                    :class="{ 'is-disabled': !client.downloadableConfig }"
+                    :title="!client.downloadableConfig ? $t('noPrivKey') : $t('downloadConfig')"
+                    @click="if(!client.downloadableConfig) { $event.preventDefault(); }">
+                    <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                  </a>
+
+                  <!-- One-time link -->
+                  <button v-if="enableOneTimeLinks" class="awg-btn-icon" :disabled="!client.downloadableConfig"
+                    :class="{ 'is-disabled': !client.downloadableConfig }"
+                    :title="!client.downloadableConfig ? $t('noPrivKey') : $t('OneTimeLink')"
+                    @click="if(client.downloadableConfig) { showOneTimeLink(client); }">
+                    <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.213 9.787a3.391 3.391 0 0 0-4.795 0l-3.425 3.426a3.39 3.39 0 0 0 4.795 4.794l.321-.304m-.321-4.49a3.39 3.39 0 0 0 4.795 0l3.424-3.426a3.39 3.39 0 0 0-4.794-4.795l-1.028.961" />
+                    </svg>
+                  </button>
+
+                  <!-- Delete -->
+                  <button class="awg-btn-icon" :title="$t('deleteClient')" @click="clientDelete = client" style="color:var(--text-faint);">
+                    <svg class="i" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Empty state -->
+            <div v-if="clients && clients.length === 0" class="awg-empty">
+              <p>{{$t("noClients")}}</p>
+              <button class="awg-btn awg-btn-primary"
+                @click="clientCreate = true; clientCreateName = ''; clientExpiredDate = '';">
+                <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                <span>{{$t("newClient")}}</span>
+              </button>
+            </div>
+
+            <!-- Loading -->
+            <div v-if="clients === null" class="awg-loader">
+              <span class="awg-spinner"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR Code modal -->
+        <div v-if="qrcode" class="awg-modal-wrap">
+          <div class="awg-modal-backdrop" @click="qrcode = null"></div>
+          <div class="awg-modal">
+            <button class="awg-modal-close" @click="qrcode = null">
+              <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <img :src="qrcode" class="awg-qr" />
+          </div>
+        </div>
+
+        <!-- Create dialog -->
+        <div v-if="clientCreate" class="awg-modal-wrap">
+          <div class="awg-modal-backdrop" @click="clientCreate = null"></div>
+          <div class="awg-modal" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+            <button class="awg-modal-close" @click="clientCreate = null">
+              <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div class="awg-modal-icon">
+              <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </div>
+            <h3 class="awg-modal-title" id="modal-headline">{{$t("newClient")}}</h3>
+            <input type="text" class="awg-input" v-model.trim="clientCreateName" :placeholder="$t('name')"
+              @keyup.enter="if(clientCreateName.length) { createClient(); clientCreate = null; }" />
+            <div class="awg-field" v-show="enableExpireTime">
+              <label class="awg-label" for="expireDate">{{$t("ExpireDate")}}</label>
+              <input type="date" class="awg-input" v-model.trim="clientExpiredDate" :placeholder="$t('expireDate')" name="expireDate" />
+            </div>
+            <div class="awg-modal-actions">
+              <button v-if="clientCreateName.length" type="button" class="awg-btn awg-btn-primary"
+                @click="createClient(); clientCreate = null">{{$t("create")}}</button>
+              <button v-else type="button" class="awg-btn awg-btn-primary is-disabled">{{$t("create")}}</button>
+              <button type="button" class="awg-btn awg-btn-ghost" @click="clientCreate = null">{{$t("cancel")}}</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete dialog -->
+        <div v-if="clientDelete" class="awg-modal-wrap">
+          <div class="awg-modal-backdrop" @click="clientDelete = null"></div>
+          <div class="awg-modal" role="dialog" aria-modal="true" aria-labelledby="modal-headline">
+            <button class="awg-modal-close" @click="clientDelete = null">
+              <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div class="awg-modal-icon is-danger">
+              <svg class="i" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 class="awg-modal-title" id="modal-headline">{{$t("deleteClient")}}</h3>
+            <p class="awg-modal-sub">{{$t("deleteDialog1")}} <strong>{{clientDelete.name}}</strong>? {{$t("deleteDialog2")}}</p>
+            <div class="awg-modal-actions">
+              <button type="button" class="awg-btn awg-btn-ghost is-danger"
+                @click="deleteClient(clientDelete); clientDelete = null">{{$t("deleteClient")}}</button>
+              <button type="button" class="awg-btn awg-btn-ghost" @click="clientDelete = null">{{$t("cancel")}}</button>
+            </div>
+          </div>
+        </div>
+      </template>
+
+      <!-- ============ LOGIN ============ -->
+      <div v-if="authenticated === false" class="awg-login">
+        <div class="awg-login-card">
+          <img src="./img/logo.svg" class="awg-login-logo" alt="" />
+          <h1 class="awg-login-title">AmneziaWG</h1>
+          <p class="awg-login-sub">Private VPN gateway</p>
+          <form @submit="login">
+            <input type="password" name="password" :placeholder="$t('password')" v-model="password" autocomplete="current-password" class="awg-input" />
+            <label v-if="rememberMeEnabled" class="awg-remember" :title="$t('titleRememberMe')">
+              <span class="awg-check" :class="remember ? 'is-on' : ''">
+                <input type="checkbox" class="awg-sr" v-model="remember" />
+              </span>
+              <span>{{$t("rememberMe")}}</span>
+            </label>
+            <button v-if="authenticating" type="button" class="awg-btn awg-btn-primary" disabled>
+              <span class="awg-spinner" style="width:16px;height:16px;border-width:2px;border-color:rgba(255,255,255,.3);border-top-color:#fff;"></span>
+            </button>
+            <input v-if="!authenticating && password" type="submit" class="awg-btn awg-btn-primary" :value="$t('signIn')" />
+            <input v-if="!authenticating && !password" type="submit" class="awg-btn awg-btn-primary is-disabled" :value="$t('signIn')" />
+          </form>
+        </div>
+      </div>
+
+      <!-- ============ LOADING ============ -->
+      <div v-if="authenticated === null" class="awg-loader">
+        <span class="awg-spinner"></span>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="./js/vendor/vue.min.js"></script>
+  <script src="./js/vendor/vue-i18n.min.js"></script>
+  <script src="./js/vendor/apexcharts.min.js"></script>
+  <script src="./js/vendor/vue-apexcharts.min.js"></script>
+  <script src="./js/vendor/sha256.min.js"></script>
+  <script src="./js/vendor/timeago.full.min.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/i18n.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+
+</html>

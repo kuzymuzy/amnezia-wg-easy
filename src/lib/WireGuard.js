@@ -31,10 +31,26 @@ const {
   JMAX,
   S1,
   S2,
+  S3,
+  S4,
   H1,
   H2,
   H3,
   H4,
+  I1,
+  I2,
+  I3,
+  I4,
+  I5,
+  HeaderProtectionKey,
+  ContentPaddingAddition,
+  RekeyAfterTime,
+  RekeyTimeout,
+  RejectAfterTime,
+  KeepaliveTimeout,
+  MaxHandshakeAttempts,
+  RandomTrailers,
+  DisableCookies,
 } = require('../config');
 
 module.exports = class WireGuard {
@@ -68,10 +84,26 @@ module.exports = class WireGuard {
             jmax: JMAX,
             s1: S1,
             s2: S2,
+            s3: S3,
+            s4: S4,
             h1: H1,
             h2: H2,
             h3: H3,
             h4: H4,
+            i1: I1,
+            i2: I2,
+            i3: I3,
+            i4: I4,
+            i5: I5,
+            headerProtectionKey: HeaderProtectionKey,
+            contentPaddingAddition: ContentPaddingAddition,
+            rekeyAfterTime: RekeyAfterTime,
+            rekeyTimeout: RekeyTimeout,
+            rejectAfterTime: RejectAfterTime,
+            keepaliveTimeout: KeepaliveTimeout,
+            maxHandshakeAttempts: MaxHandshakeAttempts,
+            randomTrailers: RandomTrailers,
+            disableCookies: DisableCookies,
           },
           clients: {},
         };
@@ -92,7 +124,8 @@ module.exports = class WireGuard {
       await Util.exec('wg-quick down wg0').catch(() => {});
       await Util.exec('wg-quick up wg0').catch((err) => {
         if (err && err.message && err.message.includes('Cannot find device "wg0"')) {
-          throw new Error('WireGuard exited with the error: Cannot find device "wg0"\nThis usually means that your host\'s kernel does not support WireGuard!');
+          debug('WireGuard exited with the error: Cannot find device "wg0"\nThis usually means that your host\'s kernel does not support WireGuard!');
+          return;
         }
 
         throw err;
@@ -132,10 +165,29 @@ Jmin = ${config.server.jmin}
 Jmax = ${config.server.jmax}
 S1 = ${config.server.s1}
 S2 = ${config.server.s2}
+S3 = ${config.server.s3}
+S4 = ${config.server.s4}
 H1 = ${config.server.h1}
 H2 = ${config.server.h2}
 H3 = ${config.server.h3}
-H4 = ${config.server.h4}
+H4 = ${config.server.h4}`;
+    for (const key of ['i1', 'i2', 'i3', 'i4', 'i5']) {
+      const val = config.server[key];
+      if (val) {
+        const name = key.toUpperCase();
+        result += `\n${name} = ${val}`;
+      }
+    }
+    result += `
+HeaderProtectionKey = ${config.server.headerProtectionKey}
+RekeyAfterTime = ${config.server.rekeyAfterTime}
+RekeyTimeout = ${config.server.rekeyTimeout}
+RejectAfterTime = ${config.server.rejectAfterTime}
+KeepaliveTimeout = ${config.server.keepaliveTimeout}
+MaxHandshakeAttempts = ${config.server.maxHandshakeAttempts}
+ContentPaddingAddition = ${config.server.contentPaddingAddition}
+RandomTrailers = ${config.server.randomTrailers}
+DisableCookies = ${config.server.disableCookies}
 `;
 
     for (const [clientId, client] of Object.entries(config.clients)) {
@@ -162,7 +214,9 @@ ${client.preSharedKey ? `PresharedKey = ${client.preSharedKey}\n` : ''
 
   async __syncConfig() {
     debug('Config syncing...');
-    await Util.exec('wg syncconf wg0 <(wg-quick strip wg0)');
+    await Util.exec('wg syncconf wg0 <(wg-quick strip wg0)').catch((err) => {
+      debug(`Config sync failed: ${err.message}`);
+    });
     debug('Config synced.');
   }
 
@@ -239,7 +293,7 @@ ${client.preSharedKey ? `PresharedKey = ${client.preSharedKey}\n` : ''
     const config = await this.getConfig();
     const client = await this.getClient({ clientId });
 
-    return `
+    let clientConfig = `
 [Interface]
 PrivateKey = ${client.privateKey ? `${client.privateKey}` : 'REPLACE_ME'}
 Address = ${client.address}/24
@@ -250,10 +304,29 @@ Jmin = ${config.server.jmin}
 Jmax = ${config.server.jmax}
 S1 = ${config.server.s1}
 S2 = ${config.server.s2}
+S3 = ${config.server.s3}
+S4 = ${config.server.s4}
 H1 = ${config.server.h1}
 H2 = ${config.server.h2}
 H3 = ${config.server.h3}
-H4 = ${config.server.h4}
+H4 = ${config.server.h4}`;
+    for (const key of ['i1', 'i2', 'i3', 'i4', 'i5']) {
+      const val = config.server[key];
+      if (val) {
+        const name = key.toUpperCase();
+        clientConfig += `\n${name} = ${val}`;
+      }
+    }
+    clientConfig += `
+HeaderProtectionKey = ${config.server.headerProtectionKey}
+RekeyAfterTime = ${config.server.rekeyAfterTime}
+RekeyTimeout = ${config.server.rekeyTimeout}
+RejectAfterTime = ${config.server.rejectAfterTime}
+KeepaliveTimeout = ${config.server.keepaliveTimeout}
+MaxHandshakeAttempts = ${config.server.maxHandshakeAttempts}
+ContentPaddingAddition = ${config.server.contentPaddingAddition}
+RandomTrailers = ${config.server.randomTrailers}
+DisableCookies = ${config.server.disableCookies}
 
 [Peer]
 PublicKey = ${config.server.publicKey}
@@ -261,6 +334,7 @@ ${client.preSharedKey ? `PresharedKey = ${client.preSharedKey}\n` : ''
 }AllowedIPs = ${WG_ALLOWED_IPS}
 PersistentKeepalive = ${WG_PERSISTENT_KEEPALIVE}
 Endpoint = ${WG_HOST}:${WG_CONFIG_PORT}`;
+    return clientConfig;
   }
 
   async getClientQRCodeSVG({ clientId }) {

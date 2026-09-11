@@ -1,0 +1,1396 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AmneziaWG</title>
+  <meta charset="utf-8"/>
+  <link href="./css/app.css" rel="stylesheet">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./img/favicon.ico" sizes="any">
+  <link rel="apple-touch-icon" href="./img/apple-touch-icon.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="color-scheme" content="light dark">
+
+  <style>
+    /* ─────────────────────────────────────────
+       iOS 17 Design System
+    ───────────────────────────────────────── */
+
+    :root {
+      /* SF Pro stack — exact iOS font cascade */
+      --font: -apple-system, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif;
+      --font-mono: "SF Mono", "Menlo", "Courier New", monospace;
+
+      /* iOS spring easing */
+      --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-ios: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --duration-fast: 180ms;
+      --duration-normal: 300ms;
+      --duration-slow: 420ms;
+
+      /* iOS corner radii */
+      --r-xs: 6px;
+      --r-sm: 10px;
+      --r-md: 13px;
+      --r-lg: 16px;
+      --r-xl: 20px;
+      --r-2xl: 26px;
+    }
+
+    /* ── Light (default) ── */
+    :root, [data-theme="light"] {
+      color-scheme: light;
+      --bg:           #F2F2F7;
+      --bg-grouped:   #F2F2F7;
+      --bg-2:         #FFFFFF;
+      --bg-inset:     #F2F2F7;
+      --separator:    rgba(60,60,67,0.18);
+      --separator-op: rgba(60,60,67,0.09);
+
+      --label-1:      rgba(0,0,0,1);
+      --label-2:      rgba(60,60,67,0.6);
+      --label-3:      rgba(60,60,67,0.3);
+      --label-4:      rgba(60,60,67,0.18);
+
+      --fill-1:       rgba(120,120,128,0.2);
+      --fill-2:       rgba(120,120,128,0.16);
+      --fill-3:       rgba(118,118,128,0.12);
+      --fill-4:       rgba(116,116,128,0.08);
+
+      --blue:         #007AFF;
+      --blue-bg:      rgba(0,122,255,0.10);
+      --green:        #34C759;
+      --green-bg:     rgba(52,199,89,0.10);
+      --red:          #FF3B30;
+      --red-bg:       rgba(255,59,48,0.10);
+      --orange:       #FF9500;
+      --orange-bg:    rgba(255,149,0,0.10);
+      --teal:         #30B0C7;
+      --indigo:       #5856D6;
+      --pink:         #FF2D55;
+
+      --vibrancy:     rgba(242,242,247,0.72);
+      --vibrancy-nav: rgba(249,249,251,0.82);
+      --nav-border:   rgba(0,0,0,0.12);
+
+      --shadow-card:  0 1px 3px rgba(0,0,0,0.08), 0 1px 1px rgba(0,0,0,0.04);
+      --shadow-modal: 0 20px 60px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.10);
+    }
+
+    /* ── Dark ── */
+    [data-theme="dark"] {
+      color-scheme: dark;
+      --bg:           #000000;
+      --bg-grouped:   #1C1C1E;
+      --bg-2:         #2C2C2E;
+      --bg-inset:     #1C1C1E;
+      --separator:    rgba(84,84,88,0.65);
+      --separator-op: rgba(84,84,88,0.36);
+
+      --label-1:      rgba(255,255,255,1);
+      --label-2:      rgba(235,235,245,0.6);
+      --label-3:      rgba(235,235,245,0.3);
+      --label-4:      rgba(235,235,245,0.18);
+
+      --fill-1:       rgba(120,120,128,0.36);
+      --fill-2:       rgba(120,120,128,0.32);
+      --fill-3:       rgba(118,118,128,0.24);
+      --fill-4:       rgba(116,116,128,0.18);
+
+      --blue:         #0A84FF;
+      --blue-bg:      rgba(10,132,255,0.15);
+      --green:        #30D158;
+      --green-bg:     rgba(48,209,88,0.15);
+      --red:          #FF453A;
+      --red-bg:       rgba(255,69,58,0.15);
+      --orange:       #FF9F0A;
+      --orange-bg:    rgba(255,159,10,0.15);
+      --teal:         #40C8E0;
+      --indigo:       #5E5CE6;
+      --pink:         #FF375F;
+
+      --vibrancy:     rgba(28,28,30,0.8);
+      --vibrancy-nav: rgba(28,28,30,0.88);
+      --nav-border:   rgba(84,84,88,0.6);
+
+      --shadow-card:  0 1px 3px rgba(0,0,0,0.4), 0 1px 1px rgba(0,0,0,0.2);
+      --shadow-modal: 0 24px 72px rgba(0,0,0,0.7), 0 4px 16px rgba(0,0,0,0.4);
+    }
+
+    /* ── Reset ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--label-1);
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+      transition:
+        background var(--duration-normal) var(--ease-ios),
+        color var(--duration-normal) var(--ease-ios);
+    }
+
+    [v-cloak] { display: none; }
+
+    /* ── Page ── */
+    .page {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 0 0 80px;
+    }
+
+    /* ─────────────────────────────────────────
+       Navigation Bar  (iOS Large Title style)
+    ───────────────────────────────────────── */
+    .nav-bar {
+      position: sticky;
+      top: 0; z-index: 100;
+      padding: env(safe-area-inset-top, 0) 0 0;
+      background: var(--vibrancy-nav);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 0.5px solid var(--nav-border);
+      transition: background var(--duration-normal) var(--ease-ios);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px 10px;
+      gap: 12px;
+    }
+
+    .nav-title {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.4px;
+      color: var(--label-1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-logo {
+      width: 28px; height: 28px;
+      border-radius: 7px;
+      overflow: hidden;
+      background: var(--fill-3);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .nav-logo img { width: 18px; height: 18px; display: block; }
+
+    .nav-actions {
+      display: flex; align-items: center; gap: 4px;
+    }
+
+    /* Large title area */
+    .nav-large {
+      padding: 6px 20px 16px;
+    }
+
+    .nav-large-title {
+      font-size: 34px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--label-1);
+      line-height: 1.1;
+    }
+
+    /* ─────────────────────────────────────────
+       iOS System Buttons
+    ───────────────────────────────────────── */
+
+    /* SF Symbol–style circular button */
+    .sys-btn {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      border: none;
+      background: var(--fill-2);
+      color: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition:
+        background var(--duration-fast),
+        transform var(--duration-fast) var(--spring),
+        opacity var(--duration-fast);
+    }
+
+    .sys-btn:active { transform: scale(0.88); opacity: 0.7; }
+    .sys-btn svg { width: 17px; height: 17px; }
+
+    /* Pill button (like "+" or actions in iOS) */
+    .pill-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 15px 7px 11px;
+      border: none; border-radius: 999px;
+      background: var(--blue);
+      color: #fff;
+      font: 600 15px var(--font);
+      letter-spacing: -0.2px;
+      cursor: pointer;
+      transition:
+        background var(--duration-fast),
+        transform var(--duration-fast) var(--spring),
+        opacity var(--duration-fast);
+      white-space: nowrap;
+    }
+
+    .pill-btn:active { transform: scale(0.94); opacity: 0.8; }
+    .pill-btn svg { width: 16px; height: 16px; }
+
+    /* Text button (navigation action style) */
+    .nav-text-btn {
+      display: flex; align-items: center; gap: 4px;
+      padding: 6px 10px;
+      border: none; border-radius: var(--r-sm);
+      background: transparent;
+      color: var(--blue);
+      font: 400 15px var(--font);
+      cursor: pointer;
+      transition: opacity var(--duration-fast);
+    }
+
+    .nav-text-btn:active { opacity: 0.5; }
+    .nav-text-btn svg { width: 16px; height: 16px; }
+
+    /* Small text btn */
+    .text-btn {
+      border: none; border-radius: var(--r-sm);
+      background: transparent;
+      color: var(--blue);
+      font: 400 14px var(--font);
+      cursor: pointer;
+      padding: 4px 8px;
+      transition: opacity var(--duration-fast);
+    }
+
+    .text-btn:active { opacity: 0.5; }
+
+    /* ─────────────────────────────────────────
+       Update Banner
+    ───────────────────────────────────────── */
+    .update-banner {
+      margin: 16px 20px;
+      padding: 14px 16px;
+      background: var(--orange-bg);
+      border-radius: var(--r-lg);
+      border: 0.5px solid var(--orange);
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      animation: ios-slide-up var(--duration-slow) var(--spring) both;
+    }
+
+    .update-banner-text strong { font: 600 14px var(--font); color: var(--orange); }
+    .update-banner-text p { font: 400 13px var(--font); color: var(--label-2); margin-top: 2px; }
+
+    .update-link {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 7px 14px;
+      border-radius: 999px;
+      background: var(--orange);
+      color: #fff;
+      font: 600 13px var(--font);
+      text-decoration: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: opacity var(--duration-fast);
+    }
+
+    .update-link:active { opacity: 0.7; }
+
+    /* ─────────────────────────────────────────
+       Grouped Inset List  (iOS Settings style)
+    ───────────────────────────────────────── */
+    .section {
+      margin: 0 20px 8px;
+      animation: ios-slide-up var(--duration-slow) var(--spring) both;
+    }
+
+    .section-header {
+      font: 400 13px var(--font);
+      color: var(--label-2);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0 16px 6px;
+    }
+
+    .ios-list {
+      background: var(--bg-2);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      transition: background var(--duration-normal) var(--ease-ios);
+    }
+
+    /* ─────────────────────────────────────────
+       Client Row
+    ───────────────────────────────────────── */
+    .client-row {
+      position: relative;
+      overflow: hidden;
+      transition: background var(--duration-fast);
+    }
+
+    .client-row:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 68px; right: 0;
+      height: 0.5px;
+      background: var(--separator-op);
+    }
+
+    .client-row:active > .client-row-inner { background: var(--fill-3); }
+
+    /* Charts behind row */
+    .row-chart-tx, .row-chart-rx {
+      position: absolute; left: 0; right: 0; height: 24px; z-index: 0;
+    }
+    .row-chart-tx { bottom: 0; opacity: 0.12; }
+    .row-chart-rx { top: 0; opacity: 0.12; transform: scaleY(-1); }
+
+    .client-row-inner {
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px 12px 16px;
+      transition: background var(--duration-fast);
+    }
+
+    /* ── iOS Avatar ── */
+    .ios-avatar {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--fill-2) 0%, var(--fill-1) 100%);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+      font: 600 16px var(--font);
+      color: var(--label-2);
+    }
+
+    .ios-avatar svg { width: 22px; height: 22px; }
+    .ios-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+
+    /* Online dot */
+    .dot-online {
+      position: absolute; bottom: 0; right: 0;
+      width: 12px; height: 12px;
+      background: var(--green);
+      border: 2px solid var(--bg-2);
+      border-radius: 50%;
+    }
+
+    .dot-online::after {
+      content: '';
+      position: absolute; inset: -4px;
+      background: var(--green);
+      border-radius: 50%;
+      opacity: 0;
+      animation: ios-pulse 2.4s ease-out infinite;
+    }
+
+    @keyframes ios-pulse {
+      0%   { transform: scale(1); opacity: 0.5; }
+      70%  { transform: scale(2.2); opacity: 0; }
+      100% { opacity: 0; }
+    }
+
+    /* ── Client Content ── */
+    .client-content { flex: 1; min-width: 0; }
+
+    .client-name-row {
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 3px;
+    }
+
+    .client-name {
+      font: 400 17px var(--font);
+      letter-spacing: -0.3px;
+      color: var(--label-1);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .client-name input {
+      font: 400 17px var(--font);
+      background: var(--fill-3);
+      border: none;
+      border-radius: var(--r-xs);
+      color: var(--label-1);
+      padding: 2px 8px;
+      outline: 2px solid var(--blue);
+      outline-offset: -1px;
+      width: 180px;
+    }
+
+    .edit-icon-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--label-3);
+      display: flex; align-items: center;
+      opacity: 0; padding: 2px;
+      border-radius: 4px;
+      transition: opacity var(--duration-fast), color var(--duration-fast);
+    }
+
+    .client-name-row:hover .edit-icon-btn,
+    .client-sub-row:hover .edit-icon-btn { opacity: 1; }
+    .edit-icon-btn:hover { color: var(--blue); }
+    .edit-icon-btn svg { width: 13px; height: 13px; }
+
+    .client-sub-row {
+      display: flex; align-items: center; gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .sub-chip {
+      font: 400 13px var(--font-mono);
+      color: var(--label-2);
+      display: flex; align-items: center; gap: 3px;
+    }
+
+    .sub-chip svg { width: 10px; height: 10px; opacity: 0.6; }
+
+    .sub-chip input {
+      font: 400 13px var(--font-mono);
+      background: var(--fill-3);
+      border: none;
+      border-radius: 4px;
+      color: var(--label-1);
+      padding: 1px 6px;
+      outline: 1.5px solid var(--blue);
+      width: 100px;
+    }
+
+    .sub-dot { color: var(--label-3); font-size: 12px; }
+
+    .otl-link {
+      font: 400 12px var(--font-mono);
+      color: var(--blue);
+      word-break: break-all;
+      width: 100%;
+      margin-top: 2px;
+    }
+
+    /* Traffic stats */
+    .traffic-block {
+      display: flex; gap: 14px;
+      flex-shrink: 0;
+      align-items: center;
+    }
+
+    .traffic-col {
+      display: flex; flex-direction: column; align-items: flex-end;
+    }
+
+    .traffic-speed {
+      font: 500 13px var(--font-mono);
+      color: var(--label-1);
+      letter-spacing: -0.3px;
+    }
+
+    .traffic-total {
+      font: 400 11px var(--font-mono);
+      color: var(--label-3);
+    }
+
+    .traffic-dir {
+      display: flex; align-items: center; gap: 2px;
+      font: 400 10px var(--font);
+      color: var(--label-3);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 1px;
+    }
+
+    .traffic-dir svg { width: 8px; height: 8px; }
+
+    /* ── Row trailing ── */
+    .row-trailing {
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* ── iOS Toggle ── */
+    .ios-toggle {
+      width: 51px; height: 31px;
+      border-radius: 999px;
+      background: var(--fill-1);
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      transition: background 0.22s var(--ease-ios);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ios-toggle.on { background: var(--green); }
+
+    .ios-toggle-knob {
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 27px; height: 27px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.28), 0 1px 2px rgba(0,0,0,0.14);
+      transition: transform 0.22s var(--spring), width 0.1s var(--ease-ios);
+    }
+
+    .ios-toggle:active .ios-toggle-knob { width: 33px; }
+    .ios-toggle.on .ios-toggle-knob { transform: translateX(20px); }
+    .ios-toggle.on:active .ios-toggle-knob { transform: translateX(14px); width: 33px; }
+
+    /* ── Row action buttons ── */
+    .row-action {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: var(--fill-2);
+      color: var(--label-2);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition:
+        background var(--duration-fast),
+        color var(--duration-fast),
+        transform var(--duration-fast) var(--spring);
+    }
+
+    .row-action:hover { background: var(--blue-bg); color: var(--blue); }
+    .row-action:active { transform: scale(0.88); }
+    .row-action.danger:hover { background: var(--red-bg); color: var(--red); }
+    .row-action:disabled, .row-action.disabled {
+      opacity: 0.28; cursor: not-allowed; pointer-events: none;
+    }
+    .row-action svg { width: 15px; height: 15px; }
+
+    /* ── Chevron (iOS disclosure) ── */
+    .chevron-right {
+      color: var(--label-3);
+      flex-shrink: 0;
+    }
+
+    .chevron-right svg { width: 14px; height: 14px; display: block; }
+
+    /* ─────────────────────────────────────────
+       Empty State
+    ───────────────────────────────────────── */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 60px 24px;
+      text-align: center; gap: 10px;
+      animation: ios-slide-up var(--duration-slow) var(--spring) both;
+    }
+
+    .empty-sf-icon {
+      width: 72px; height: 72px;
+      border-radius: 20px;
+      background: var(--fill-3);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 6px;
+    }
+
+    .empty-sf-icon svg { width: 36px; height: 36px; color: var(--label-3); }
+    .empty-title { font: 600 17px var(--font); color: var(--label-1); letter-spacing: -0.3px; }
+    .empty-sub { font: 400 14px var(--font); color: var(--label-2); line-height: 1.4; max-width: 220px; }
+
+    /* ─────────────────────────────────────────
+       Spinner
+    ───────────────────────────────────────── */
+    .spinner-wrap { display: flex; align-items: center; justify-content: center; padding: 56px; }
+
+    .ios-spinner {
+      width: 28px; height: 28px;
+      position: relative;
+    }
+
+    .ios-spinner::after {
+      content: '';
+      display: block;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2.5px solid var(--fill-1);
+      border-top-color: var(--blue);
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ─────────────────────────────────────────
+       iOS Sheet / Modal
+    ───────────────────────────────────────── */
+    .sheet-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 200;
+      display: flex; align-items: flex-end; justify-content: center;
+      padding-bottom: env(safe-area-inset-bottom, 0);
+      animation: backdrop-fade var(--duration-normal) ease;
+    }
+
+    @keyframes backdrop-fade { from { opacity: 0; } to { opacity: 1; } }
+
+    .ios-sheet {
+      background: var(--vibrancy);
+      backdrop-filter: saturate(180%) blur(40px);
+      -webkit-backdrop-filter: saturate(180%) blur(40px);
+      border-radius: var(--r-2xl) var(--r-2xl) 0 0;
+      width: 100%; max-width: 680px;
+      padding-bottom: env(safe-area-inset-bottom, 24px);
+      box-shadow: var(--shadow-modal);
+      animation: sheet-up var(--duration-slow) var(--spring) both;
+      overflow: hidden;
+    }
+
+    @keyframes sheet-up {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
+
+    /* Sheet handle */
+    .sheet-handle {
+      width: 36px; height: 5px;
+      background: var(--fill-2);
+      border-radius: 999px;
+      margin: 10px auto 0;
+    }
+
+    .sheet-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px 12px;
+    }
+
+    .sheet-title {
+      font: 600 17px var(--font);
+      letter-spacing: -0.4px;
+      color: var(--label-1);
+    }
+
+    /* Alert-style modal (centered, for delete) */
+    .alert-wrap {
+      display: flex; align-items: center; justify-content: center;
+      padding: 20px;
+      position: fixed; inset: 0;
+      z-index: 200;
+      animation: backdrop-fade var(--duration-normal) ease;
+      background: rgba(0,0,0,0.45);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .ios-alert {
+      background: var(--vibrancy);
+      backdrop-filter: saturate(180%) blur(40px);
+      -webkit-backdrop-filter: saturate(180%) blur(40px);
+      border-radius: var(--r-2xl);
+      width: 100%; max-width: 320px;
+      box-shadow: var(--shadow-modal);
+      overflow: hidden;
+      animation: alert-pop var(--duration-normal) var(--spring) both;
+    }
+
+    @keyframes alert-pop {
+      from { opacity: 0; transform: scale(0.92); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .alert-content { padding: 22px 20px 16px; text-align: center; }
+
+    .alert-title {
+      font: 600 17px var(--font);
+      letter-spacing: -0.4px;
+      color: var(--label-1);
+      margin-bottom: 6px;
+    }
+
+    .alert-body {
+      font: 400 13px var(--font);
+      color: var(--label-2);
+      line-height: 1.45;
+    }
+
+    .alert-actions {
+      border-top: 0.5px solid var(--separator);
+      display: flex;
+    }
+
+    .alert-btn {
+      flex: 1;
+      padding: 14px 8px;
+      border: none; background: none;
+      font: 400 17px var(--font);
+      color: var(--blue);
+      cursor: pointer;
+      transition: background var(--duration-fast);
+      letter-spacing: -0.3px;
+    }
+
+    .alert-btn:not(:last-child) { border-right: 0.5px solid var(--separator); }
+    .alert-btn:active { background: var(--fill-3); }
+    .alert-btn.destructive { color: var(--red); }
+    .alert-btn.bold { font-weight: 600; }
+
+    /* QR White panel */
+    .qr-panel {
+      background: #fff;
+      border-radius: var(--r-2xl);
+      padding: 28px;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+      max-width: 280px; width: 100%;
+      position: relative;
+      animation: alert-pop var(--duration-normal) var(--spring) both;
+    }
+
+    .qr-panel img { width: 200px; height: 200px; border-radius: var(--r-md); }
+
+    .qr-close-btn {
+      position: absolute; top: 12px; right: 12px;
+      width: 28px; height: 28px;
+      border-radius: 50%; border: none;
+      background: rgba(0,0,0,0.08);
+      color: #555;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+
+    .qr-close-btn svg { width: 14px; height: 14px; }
+
+    /* ─────────────────────────────────────────
+       Form Fields (inside sheet)
+    ───────────────────────────────────────── */
+    .sheet-form { padding: 0 20px 20px; display: flex; flex-direction: column; gap: 12px; }
+
+    .ios-field-group {
+      background: var(--bg-2);
+      border-radius: var(--r-lg);
+      overflow: hidden;
+    }
+
+    .ios-field {
+      display: flex; align-items: center;
+      padding: 12px 16px;
+      gap: 12px;
+      position: relative;
+    }
+
+    .ios-field:not(:last-child)::after {
+      content: '';
+      position: absolute; bottom: 0; left: 16px; right: 0;
+      height: 0.5px; background: var(--separator-op);
+    }
+
+    .ios-field label {
+      font: 400 17px var(--font);
+      color: var(--label-1);
+      letter-spacing: -0.3px;
+      white-space: nowrap;
+      min-width: 80px;
+    }
+
+    .ios-field input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font: 400 17px var(--font);
+      color: var(--label-1);
+      outline: none;
+      text-align: right;
+      letter-spacing: -0.3px;
+    }
+
+    .ios-field input::placeholder { color: var(--label-3); }
+
+    /* ─────────────────────────────────────────
+       Login Screen
+    ───────────────────────────────────────── */
+    .login-page {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 40px 20px;
+      background: var(--bg);
+    }
+
+    .login-wrap { width: 100%; max-width: 360px; }
+
+    .login-icon-block {
+      display: flex; flex-direction: column; align-items: center;
+      margin-bottom: 36px;
+      animation: ios-slide-up var(--duration-slow) var(--spring) 0ms both;
+    }
+
+    .login-app-icon {
+      width: 80px; height: 80px;
+      border-radius: 18px;
+      background: linear-gradient(160deg, #1C1C1E 0%, #2C2C2E 100%);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.20);
+      margin-bottom: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    [data-theme="light"] .login-app-icon {
+      background: linear-gradient(160deg, #F2F2F7 0%, #E5E5EA 100%);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+    }
+
+    .login-app-icon::after {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0;
+      height: 50%;
+      background: linear-gradient(to bottom, rgba(255,255,255,0.12), transparent);
+      border-radius: 18px 18px 0 0;
+    }
+
+    .login-app-icon img { width: 48px; height: 48px; position: relative; z-index: 1; }
+
+    .login-app-name {
+      font: 700 22px var(--font);
+      letter-spacing: -0.5px;
+      color: var(--label-1);
+      margin-bottom: 4px;
+    }
+
+    .login-app-sub {
+      font: 400 14px var(--font);
+      color: var(--label-2);
+      text-align: center;
+    }
+
+    .login-card {
+      background: var(--bg-2);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 16px;
+      animation: ios-slide-up var(--duration-slow) var(--spring) 80ms both;
+    }
+
+    .login-field {
+      display: flex; align-items: center;
+      padding: 14px 16px;
+      gap: 10px;
+      position: relative;
+    }
+
+    .login-field:not(:last-child)::after {
+      content: '';
+      position: absolute; bottom: 0; left: 16px; right: 0;
+      height: 0.5px; background: var(--separator-op);
+    }
+
+    .login-field-label {
+      font: 400 17px var(--font);
+      color: var(--label-1);
+      letter-spacing: -0.3px;
+      min-width: 90px;
+    }
+
+    .login-field input {
+      flex: 1; border: none; background: transparent;
+      font: 400 17px var(--font);
+      color: var(--label-1);
+      outline: none;
+      letter-spacing: -0.3px;
+    }
+
+    .login-field input::placeholder { color: var(--label-3); }
+
+    .login-submit-btn {
+      width: 100%;
+      padding: 16px;
+      border: none; border-radius: var(--r-xl);
+      background: var(--blue);
+      color: #fff;
+      font: 600 17px var(--font);
+      letter-spacing: -0.3px;
+      cursor: pointer;
+      transition: opacity var(--duration-fast), transform var(--duration-fast) var(--spring);
+      animation: ios-slide-up var(--duration-slow) var(--spring) 140ms both;
+    }
+
+    .login-submit-btn:active { transform: scale(0.97); opacity: 0.8; }
+    .login-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .login-remember {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px;
+      font: 400 17px var(--font);
+      color: var(--label-1);
+      letter-spacing: -0.3px;
+    }
+
+    /* ─────────────────────────────────────────
+       Toolbar (bottom action row)
+    ───────────────────────────────────────── */
+    .toolbar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 20px;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 7px 14px;
+      border: none; border-radius: 999px;
+      background: var(--fill-2);
+      color: var(--blue);
+      font: 400 14px var(--font);
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity var(--duration-fast), background var(--duration-fast);
+      white-space: nowrap;
+    }
+
+    .toolbar-btn:active { opacity: 0.6; }
+    .toolbar-btn svg { width: 14px; height: 14px; }
+    .toolbar-btn label { cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    .toolbar-btn input { display: none; }
+
+    /* ─────────────────────────────────────────
+       Animations
+    ───────────────────────────────────────── */
+    @keyframes ios-slide-up {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Stagger rows */
+    .client-row:nth-child(1) { animation: ios-slide-up var(--duration-slow) var(--spring) 0ms both; }
+    .client-row:nth-child(2) { animation: ios-slide-up var(--duration-slow) var(--spring) 40ms both; }
+    .client-row:nth-child(3) { animation: ios-slide-up var(--duration-slow) var(--spring) 80ms both; }
+    .client-row:nth-child(4) { animation: ios-slide-up var(--duration-slow) var(--spring) 120ms both; }
+    .client-row:nth-child(5) { animation: ios-slide-up var(--duration-slow) var(--spring) 160ms both; }
+    .client-row:nth-child(n+6) { animation: ios-slide-up var(--duration-slow) var(--spring) 200ms both; }
+
+    /* ─────────────────────────────────────────
+       Responsive
+    ───────────────────────────────────────── */
+    @media (max-width: 580px) {
+      .traffic-block { display: none; }
+      .client-row-inner { padding: 11px 14px; gap: 10px; }
+      .page { padding: 0 0 64px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div v-cloak>
+
+      <!-- ════════════════════ AUTHENTICATED ════════════════════ -->
+      <div v-if="authenticated === true" class="page">
+
+        <!-- Nav Bar -->
+        <nav class="nav-bar">
+          <div class="nav-inner">
+            <div class="nav-title">
+              <div class="nav-logo">
+                <img src="./img/logo.svg" alt="" />
+              </div>
+              AmneziaWG
+            </div>
+            <div class="nav-actions">
+              <!-- Charts -->
+              <button v-if="uiChartType > 0" class="sys-btn"
+                :style="uiShowCharts ? 'background:var(--blue-bg);color:var(--blue)' : ''"
+                @click="uiShowCharts = !uiShowCharts; toggleCharts()" :title="$t('toggleCharts')">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.375 2.25c-1.035 0-1.875.84-1.875 1.875v15.75c0 1.035.84 1.875 1.875 1.875h.75c1.035 0 1.875-.84 1.875-1.875V4.125c0-1.036-.84-1.875-1.875-1.875h-.75ZM9.75 8.625c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v11.25c0 1.035-.84 1.875-1.875 1.875h-.75a1.875 1.875 0 0 1-1.875-1.875V8.625ZM3 13.125c0-1.036.84-1.875 1.875-1.875h.75c1.036 0 1.875.84 1.875 1.875v6.75c0 1.035-.84 1.875-1.875 1.875h-.75A1.875 1.875 0 0 1 3 19.875v-6.75Z" />
+                </svg>
+              </button>
+              <!-- Theme -->
+              <button class="sys-btn" @click="toggleTheme" :title="$t(`theme.${uiTheme}`)">
+                <svg v-if="uiTheme === 'light'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />
+                </svg>
+              </button>
+              <!-- New client pill -->
+              <button class="pill-btn" @click="clientCreate = true; clientCreateName = ''; clientExpiredDate = '';">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                </svg>
+                {{$t("new")}}
+              </button>
+              <!-- Logout -->
+              <button v-if="requiresPassword" class="nav-text-btn" @click="logout">
+                {{$t("logout")}}
+              </button>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Update Banner -->
+        <div v-if="latestRelease" class="update-banner">
+          <div class="update-banner-text">
+            <strong>{{$t("updateAvailable")}}</strong>
+            <p>{{latestRelease.changelog}}</p>
+          </div>
+          <a href="https://github.com/wg-easy/wg-easy#updating" target="_blank" class="update-link">
+            {{$t("update")}} →
+          </a>
+        </div>
+
+        <!-- Clients section -->
+        <div class="section" style="margin-top:24px">
+          <div class="ios-list" v-if="clients !== null">
+
+            <!-- Client rows -->
+            <template v-if="clients && clients.length > 0">
+              <div class="client-row" v-for="client in clients" :key="client.id">
+
+                <!-- Charts -->
+                <div v-if="uiChartType" class="row-chart-rx" :class="uiChartType===1?'line-chart':''">
+                  <apexchart width="100%" height="100%" :options="chartOptionsRX" :series="client.transferRxSeries" style="transform:scaleY(-1)"></apexchart>
+                </div>
+                <div v-if="uiChartType" class="row-chart-tx" :class="uiChartType===1?'line-chart':''">
+                  <apexchart width="100%" height="100%" :options="chartOptionsTX" :series="client.transferTxSeries"></apexchart>
+                </div>
+
+                <div class="client-row-inner">
+                  <!-- Avatar -->
+                  <div class="ios-avatar">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                    </svg>
+                    <img v-if="client.avatar" :src="client.avatar" />
+                    <div v-if="client.latestHandshakeAt && ((new Date()-new Date(client.latestHandshakeAt))<1000*60*10)" class="dot-online"></div>
+                  </div>
+
+                  <!-- Content -->
+                  <div class="client-content">
+                    <div class="client-name-row" :title="$t('createdOn')+dateTime(new Date(client.createdAt))">
+                      <div class="client-name">
+                        <input v-show="clientEditNameId===client.id" v-model="clientEditName"
+                          v-on:keyup.enter="updateClientName(client,clientEditName);clientEditName=null;clientEditNameId=null;"
+                          v-on:keyup.escape="clientEditName=null;clientEditNameId=null;"
+                          :ref="'client-'+client.id+'-name'" />
+                        <span v-show="clientEditNameId!==client.id">{{client.name}}</span>
+                      </div>
+                      <button class="edit-icon-btn" v-show="clientEditNameId!==client.id"
+                        @click="clientEditName=client.name;clientEditNameId=client.id;setTimeout(()=>$refs['client-'+client.id+'-name'][0].select(),1)">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"/>
+                        </svg>
+                      </button>
+                    </div>
+
+                    <div class="client-sub-row">
+                      <!-- IP -->
+                      <span class="sub-chip">
+                        <input v-show="clientEditAddressId===client.id" v-model="clientEditAddress"
+                          v-on:keyup.enter="updateClientAddress(client,clientEditAddress);clientEditAddress=null;clientEditAddressId=null;"
+                          v-on:keyup.escape="clientEditAddress=null;clientEditAddressId=null;"
+                          :ref="'client-'+client.id+'-address'" />
+                        <span v-show="clientEditAddressId!==client.id">{{client.address}}</span>
+                        <button class="edit-icon-btn" v-show="clientEditAddressId!==client.id"
+                          @click="clientEditAddress=client.address;clientEditAddressId=client.id;setTimeout(()=>$refs['client-'+client.id+'-address'][0].select(),1)">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"/>
+                          </svg>
+                        </button>
+                      </span>
+                      <!-- Inline traffic -->
+                      <template v-if="!uiTrafficStats">
+                        <span v-if="client.transferTx" class="sub-dot">·</span>
+                        <span v-if="client.transferTx" class="sub-chip" :title="$t('totalDownload')+bytes(client.transferTx)">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                          {{client.transferTxCurrent | bytes}}/s
+                        </span>
+                        <span v-if="client.transferRx" class="sub-chip" :title="$t('totalUpload')+bytes(client.transferRx)">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                          {{client.transferRxCurrent | bytes}}/s
+                        </span>
+                      </template>
+                      <!-- Last seen -->
+                      <span v-if="client.latestHandshakeAt" class="sub-dot">·</span>
+                      <span v-if="client.latestHandshakeAt" class="sub-chip" :title="$t('lastSeen')+dateTime(new Date(client.latestHandshakeAt))">
+                        {{new Date(client.latestHandshakeAt) | timeago}}
+                      </span>
+                      <!-- OTL -->
+                      <div v-if="enableOneTimeLinks && client.oneTimeLink" :ref="'client-'+client.id+'-link'" class="otl-link" style="width:100%">
+                        <a :href="'./cnf/'+client.oneTimeLink">{{document.location.protocol}}//{{document.location.host}}/cnf/{{client.oneTimeLink}}</a>
+                      </div>
+                      <!-- Expire -->
+                      <span v-show="enableExpireTime" class="sub-chip">
+                        <input v-show="clientEditExpireDateId===client.id" v-model="clientEditExpireDate"
+                          v-on:keyup.enter="updateClientExpireDate(client,clientEditExpireDate);clientEditExpireDate=null;clientEditExpireDateId=null;"
+                          v-on:keyup.escape="clientEditExpireDate=null;clientEditExpireDateId=null;"
+                          :ref="'client-'+client.id+'-expire'" type="text" style="width:90px" />
+                        <span v-show="clientEditExpireDateId!==client.id">{{client.expiredAt | expiredDateFormat}}</span>
+                        <button class="edit-icon-btn" v-show="clientEditExpireDateId!==client.id"
+                          @click="clientEditExpireDate=client.expiredAt?client.expiredAt.toISOString().slice(0,10):'yyyy-mm-dd';clientEditExpireDateId=client.id;setTimeout(()=>$refs['client-'+client.id+'-expire'][0].select(),1)">
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"/></svg>
+                        </button>
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- Traffic panel -->
+                  <div v-if="uiTrafficStats" class="traffic-block">
+                    <div class="traffic-col" v-if="client.transferTx">
+                      <div class="traffic-dir">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                        down
+                      </div>
+                      <div class="traffic-speed">{{client.transferTxCurrent | bytes}}/s</div>
+                      <div class="traffic-total">{{bytes(client.transferTx)}}</div>
+                    </div>
+                    <div class="traffic-col" v-if="client.transferRx">
+                      <div class="traffic-dir">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
+                        up
+                      </div>
+                      <div class="traffic-speed">{{client.transferRxCurrent | bytes}}/s</div>
+                      <div class="traffic-total">{{bytes(client.transferRx)}}</div>
+                    </div>
+                  </div>
+
+                  <!-- Trailing actions -->
+                  <div class="row-trailing">
+                    <!-- Toggle -->
+                    <div class="ios-toggle" :class="{on:client.enabled}"
+                      @click="client.enabled?disableClient(client):enableClient(client)"
+                      :title="client.enabled?$t('disableClient'):$t('enableClient')">
+                      <div class="ios-toggle-knob"></div>
+                    </div>
+                    <!-- QR -->
+                    <button class="row-action" :class="{disabled:!client.downloadableConfig}"
+                      :disabled="!client.downloadableConfig"
+                      :title="!client.downloadableConfig?$t('noPrivKey'):$t('showQR')"
+                      @click="qrcode=`./api/wireguard/client/${client.id}/qrcode.svg`">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+                      </svg>
+                    </button>
+                    <!-- Download -->
+                    <a class="row-action" :class="{disabled:!client.downloadableConfig}"
+                      :href="'./api/wireguard/client/'+client.id+'/configuration'"
+                      :download="client.downloadableConfig?'configuration':null"
+                      :title="!client.downloadableConfig?$t('noPrivKey'):$t('downloadConfig')"
+                      @click="if(!client.downloadableConfig){$event.preventDefault();}">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                      </svg>
+                    </a>
+                    <!-- OTL button -->
+                    <button v-if="enableOneTimeLinks" class="row-action" :class="{disabled:!client.downloadableConfig}"
+                      :disabled="!client.downloadableConfig"
+                      :title="!client.downloadableConfig?$t('noPrivKey'):$t('OneTimeLink')"
+                      @click="if(client.downloadableConfig){showOneTimeLink(client);}">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.213 9.787a3.391 3.391 0 0 0-4.795 0l-3.425 3.426a3.39 3.39 0 0 0 4.795 4.794l.321-.304m-.321-4.49a3.39 3.39 0 0 0 4.795 0l3.424-3.426a3.39 3.39 0 0 0-4.794-4.795l-1.028.961"/>
+                      </svg>
+                    </button>
+                    <!-- Delete -->
+                    <button class="row-action danger" :title="$t('deleteClient')" @click="clientDelete=client">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <!-- Empty -->
+            <div v-if="clients && clients.length===0" class="empty-state">
+              <div class="empty-sf-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/>
+                </svg>
+              </div>
+              <p class="empty-title">{{$t("noClients")}}</p>
+              <p class="empty-sub">Tap + New to add your first WireGuard peer.</p>
+              <button class="pill-btn" style="margin-top:8px"
+                @click="clientCreate=true;clientCreateName='';clientExpiredDate='';">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                {{$t("newClient")}}
+              </button>
+            </div>
+          </div>
+
+          <!-- Loading -->
+          <div v-if="clients===null" class="ios-list" style="padding:56px 0">
+            <div class="spinner-wrap"><div class="ios-spinner"></div></div>
+          </div>
+        </div>
+
+        <!-- Bottom Toolbar -->
+        <div class="section" style="margin-top:8px">
+          <div class="ios-list">
+            <div class="toolbar">
+              <!-- Restore -->
+              <button class="toolbar-btn">
+                <label>
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"/>
+                  </svg>
+                  {{$t("restore")}}
+                  <input id="inputRC" type="file" name="configurationfile" accept="text/*,.json" @change="restoreConfig" />
+                </label>
+              </button>
+              <!-- Backup -->
+              <a class="toolbar-btn" href="./api/wireguard/backup">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 0 1-3-3m3 3a3 3 0 1 0 0 6h13.5a3 3 0 1 0 0-6m-16.5-3a3 3 0 0 1 3-3h13.5a3 3 0 0 1 3 3m-19.5 0a4.5 4.5 0 0 1 .9-2.7L5.737 5.1a3.375 3.375 0 0 1 2.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 0 1 .9 2.7m0 0a3 3 0 0 1-3 3m0 3h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Zm-3 6h.008v.008h-.008v-.008Zm0-6h.008v.008h-.008v-.008Z"/>
+                </svg>
+                {{$t("backup")}}
+              </a>
+              <!-- Sort -->
+              <button v-if="enableSortClient" class="toolbar-btn"
+                :style="sortClient?'color:var(--blue);background:var(--blue-bg)':''"
+                @click="sortClient=!sortClient">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 7.5 7.5 3m0 0L12 7.5M7.5 3v13.5m13.5 0L16.5 21m0 0L12 16.5m4.5 4.5V7.5"/>
+                </svg>
+                {{$t("sort")}}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- QR Alert -->
+        <div v-if="qrcode" class="alert-wrap" @click.self="qrcode=null">
+          <div class="qr-panel">
+            <button class="qr-close-btn" @click="qrcode=null">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+            <img :src="qrcode" />
+          </div>
+        </div>
+
+        <!-- Create Sheet -->
+        <div v-if="clientCreate" class="sheet-backdrop" @click.self="clientCreate=null">
+          <div class="ios-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-header">
+              <button class="nav-text-btn" @click="clientCreate=null">{{$t("cancel")}}</button>
+              <span class="sheet-title">{{$t("newClient")}}</span>
+              <button class="nav-text-btn" style="font-weight:600"
+                :style="!clientCreateName.length?'opacity:0.35;pointer-events:none':''"
+                @click="if(clientCreateName.length){createClient();clientCreate=null}">
+                {{$t("create")}}
+              </button>
+            </div>
+            <div class="sheet-form">
+              <div class="ios-field-group">
+                <div class="ios-field">
+                  <label>{{$t("name")}}</label>
+                  <input type="text" v-model.trim="clientCreateName" :placeholder="$t('name')" autofocus />
+                </div>
+                <div class="ios-field" v-show="enableExpireTime">
+                  <label>{{$t("ExpireDate")}}</label>
+                  <input type="date" v-model.trim="clientExpiredDate" name="expireDate" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete Alert -->
+        <div v-if="clientDelete" class="alert-wrap" @click.self="clientDelete=null">
+          <div class="ios-alert">
+            <div class="alert-content">
+              <div class="alert-title">{{$t("deleteClient")}}</div>
+              <div class="alert-body">
+                {{$t("deleteDialog1")}} <strong>{{clientDelete.name}}</strong>? {{$t("deleteDialog2")}}
+              </div>
+            </div>
+            <div class="alert-actions">
+              <button class="alert-btn bold" @click="clientDelete=null">{{$t("cancel")}}</button>
+              <button class="alert-btn destructive" @click="deleteClient(clientDelete);clientDelete=null">{{$t("deleteClient")}}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════════════════ LOGIN ════════════════════ -->
+      <div v-if="authenticated===false" class="login-page">
+        <div class="login-wrap">
+          <div class="login-icon-block">
+            <div class="login-app-icon">
+              <img src="./img/logo.svg" alt="AmneziaWG" />
+            </div>
+            <div class="login-app-name">AmneziaWG</div>
+            <div class="login-app-sub">Secure WireGuard VPN</div>
+          </div>
+
+          <div class="login-card">
+            <div class="login-field">
+              <span class="login-field-label">{{$t("password")}}</span>
+              <input type="password" name="password" v-model="password"
+                autocomplete="current-password"
+                @keyup.enter="if(password)login($event)" />
+            </div>
+            <div class="login-remember" v-if="rememberMeEnabled">
+              <span>{{$t("rememberMe")}}</span>
+              <div class="ios-toggle" :class="{on:remember}" @click="remember=!remember">
+                <div class="ios-toggle-knob"></div>
+              </div>
+            </div>
+          </div>
+
+          <button class="login-submit-btn" :disabled="!password || authenticating" @click="login">
+            <span v-if="!authenticating">{{$t("signIn")}}</span>
+            <span v-else style="display:flex;align-items:center;justify-content:center;gap:8px">
+              <span class="ios-spinner" style="display:inline-block;width:18px;height:18px"></span>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- ════════════════════ LOADING ════════════════════ -->
+      <div v-if="authenticated===null" style="display:flex;align-items:center;justify-content:center;min-height:100vh">
+        <div class="ios-spinner"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./js/vendor/vue.min.js"></script>
+  <script src="./js/vendor/vue-i18n.min.js"></script>
+  <script src="./js/vendor/apexcharts.min.js"></script>
+  <script src="./js/vendor/vue-apexcharts.min.js"></script>
+  <script src="./js/vendor/sha256.min.js"></script>
+  <script src="./js/vendor/timeago.full.min.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/i18n.js"></script>
+  <script src="./js/app.js"></script>
+  <script>
+    /* Sync data-theme on html element with Vue's uiTheme */
+    (function() {
+      function applyTheme(theme) {
+        var t = theme;
+        if (t === 'auto') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', t);
+      }
+      var stored = localStorage.getItem('uiTheme') || 'dark';
+      applyTheme(stored);
+
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function() {
+        if ((localStorage.getItem('uiTheme') || 'dark') === 'auto') applyTheme('auto');
+      });
+
+      /* Watch class changes from app.js toggleTheme */
+      var mo = new MutationObserver(function() {
+        var cls = document.documentElement.className;
+        if (cls.indexOf('dark') !== -1) applyTheme('dark');
+        else if (cls.indexOf('light') !== -1) applyTheme('light');
+      });
+      mo.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    })();
+  </script>
+</body>
+</html>
